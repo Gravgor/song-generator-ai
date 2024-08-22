@@ -11,10 +11,10 @@ const Logo = styled('img')({
 
 export default function Navbar() {
    return (
-    <AppBar position="static" color="default" elevation={0}>
+    <AppBar position="static" color="inherit" elevation={0} sx={{ backgroundColor: '#FFFFFF' }}>
     <Toolbar>
       <Logo src="/images/TuneCraft.png" alt="AI Song Creator Logo" height="50" style={{ marginRight: '16px' }} />
-      <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      <Typography variant="h6" sx={{ flexGrow: 1, color: '#333333' }}>
         AI Song Creator
       </Typography>
       <Button color="primary">Login</Button>
