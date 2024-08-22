@@ -6,6 +6,7 @@ import '@material/web/button/outlined-button.js';
 import '@material/web/checkbox/checkbox.js';
 import Navbar from "@/components/Navbar";
 
+
 const roboto = Poppins({ subsets: ["latin"], weight: ['400'] });
 
 export const metadata: Metadata = {
