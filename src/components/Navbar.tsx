@@ -15,7 +15,7 @@ export default function Navbar() {
     <AppBar position="static" color="inherit" elevation={0} sx={{ backgroundColor: '#FFFFFF' }}>
     <Toolbar>
       <Link href="/">
-      <Logo src="/images/TuneCraft.png" alt="AI Song Creator Logo" height="50" style={{ marginRight: '16px' }} />
+      <Logo src="/images/TuneCraft.webp" alt="AI Song Creator Logo" height="50" style={{ marginRight: '16px' }} />
       </Link>
       <Typography variant="h6" sx={{ flexGrow: 1, color: '#333333' }}>
         TuneCraft - AI Song Creator

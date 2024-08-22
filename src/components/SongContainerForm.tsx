@@ -1,14 +1,16 @@
-"use client";
-import { useState } from "react";
-import { TextField, Typography, Button, Card, Box, Skeleton, FormHelperText} from "@mui/material";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { TextField, Typography, Button, Card, Box, Skeleton, FormHelperText } from '@mui/material';
 import { styled } from '@mui/system';
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { SongGenerationSchema } from "@/schema/yup";
-import generateLyrics from "@/actions/actions";
-import { parseAIResponse } from "@/helpers/parseResponse";
-import { colors } from "@/style/style";
-import AuthDialog from "./AuthDialog";
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { SongGenerationSchema } from '@/schema/yup';
+import { colors } from '@/style/style';
+import AuthDialog from './AuthDialog';
+import { useSearchParams } from 'next/navigation';
+import { parseAISongDetails } from '@/helpers/parseResponse';
+import generateSongDetails, { generateLyrics } from '@/actions/actions';
 
 const SongIdeaCard = styled(Card)({
   backgroundColor: '#fff',
@@ -49,60 +51,68 @@ const LargeTextField = styled(TextField)({
   padding: '1rem',
 });
 
-export const SongCreationLoading = () => {
-  return (
-    <AIResponseCard>
-      <Skeleton variant="text" width="100%" height={40} sx={{ marginBottom: '1rem' }} />
-      <Skeleton variant="rectangular" width="100%" height={120} sx={{ marginBottom: '1rem' }} />
-      <Skeleton variant="text" width="100%" height={40} sx={{ marginBottom: '1rem' }} />
-      <Skeleton variant="rectangular" width="100%" height={60} sx={{ marginBottom: '1rem' }} />
-    </AIResponseCard>
-  );
-};
+export const SongCreationLoading = () => (
+  <AIResponseCard>
+    <Skeleton variant="text" width="100%" height={40} sx={{ marginBottom: '1rem' }} />
+    <Skeleton variant="rectangular" width="100%" height={120} sx={{ marginBottom: '1rem' }} />
+    <Skeleton variant="text" width="100%" height={40} sx={{ marginBottom: '1rem' }} />
+    <Skeleton variant="rectangular" width="100%" height={60} sx={{ marginBottom: '1rem' }} />
+  </AIResponseCard>
+);
 
 export default function SongCreationForm() {
-  const [aiSuggestions, setAISuggestions] = useState<any>(null);
-  const [finalizedSong, setFinalizedSong] = useState<any>({ title: "", style: "", lyrics: "" });
-  const [isAIResponseReceived, setIsAIResponseReceived] = useState<boolean>(false);
+  const [initialResponse, setInitialResponse] = useState<any>(null);
+  const [finalLyrics, setFinalLyrics] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isAIResponseReceived, setIsAIResponseReceived] = useState<boolean>(false);
   const [openLoginDialog, setOpenLoginDialog] = useState<boolean>(false);
-
+  const searchParams = useSearchParams();
   const { control, handleSubmit, setValue, getValues } = useForm({
     defaultValues: {
       songTitle: "",
       songIdea: "",
-      lyrics: "",
       style: "",
+      tone: "",
+      vocalStyle: "",
+      accents: "",
+      lyrics: "",
     },
     resolver: yupResolver(SongGenerationSchema),
   });
 
-  const onSubmit: SubmitHandler<any> = async (data) => {
+  // Handle initial submission to get style, tone, vocal style, and accents
+  const onSubmitInitial: SubmitHandler<any> = async (data) => {
     setLoading(true);
-    const request = await generateLyrics(data.songTitle, data.songIdea);
-    const parsedResponse: any = parseAIResponse(request.content);
-    setAISuggestions(parsedResponse);
-    setFinalizedSong(parsedResponse);
-    setValue("lyrics", parsedResponse.lyrics);
+    const request = await generateSongDetails(data.songIdea);
+    const parsedResponse = parseAISongDetails(request.content);
     setValue("style", parsedResponse.style);
-    setValue("songTitle", parsedResponse.title);
+    setValue("tone", parsedResponse.tone);
+    setValue("vocalStyle", parsedResponse.vocalStyle);
+    setValue("accents", parsedResponse.accents);
+    setInitialResponse(parsedResponse);
     setIsAIResponseReceived(true);
     setLoading(false);
   };
 
-  const handleEditFinalizedSong = (field: string, value: string) => {
-    setFinalizedSong((prev: any) => ({
-      ...prev,
-      [field]: value,
-    }));
-    setValue(field as "style" | "songTitle" | "songIdea" | "lyrics", value);
+  const onSubmitFinal: SubmitHandler<any> = async (data) => {
+    console.log(data);
+    setLoading(true);
+    const request = await generateLyrics(getValues("songIdea"), getValues("style"), getValues("tone"), getValues("vocalStyle"), getValues("accents")
+    );
+    setFinalLyrics(request);
+    setLoading(false);
   };
 
+  useEffect(() => {
+    if (searchParams.has("idea")) {
+      setValue("songIdea", searchParams.get("idea") || "");
+    }
+  }, []);
+
   const handlePaymentAndGenerateSong = () => {
-    const isAuthenticated = false; 
+    const isAuthenticated = false; // Replace with actual authentication check
     if (isAuthenticated) {
-      console.log("Finalized Song:", finalizedSong);
-      // Proceed with payment and song generation
+      onSubmitFinal(getValues());
     } else {
       setOpenLoginDialog(true);
     }
@@ -116,10 +126,13 @@ export default function SongCreationForm() {
     console.log("Redirecting to login page...");
   };
 
+  
   return (
     <>
       {!isAIResponseReceived ? (
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(getValues()); }}>
+        <form onSubmit={(e) => {
+          e.preventDefault(); onSubmitInitial(getValues())
+        }}>
           <SongIdeaCard>
             <Typography variant="h5" gutterBottom>
               Enter Your Song Title
@@ -166,7 +179,7 @@ export default function SongCreationForm() {
               )}
             />
             <StyledButton type="submit" variant="contained">
-              Generate AI Suggestions
+              Get AI Style & Tone Suggestions
             </StyledButton>
           </SongIdeaCard>
         </form>
@@ -174,93 +187,221 @@ export default function SongCreationForm() {
         <>
           {loading ? (
             <SongCreationLoading />
+          ) : finalLyrics ? (
+            <AIResponseCard>
+              <Typography variant="h5" gutterBottom>
+                Final Lyrics
+              </Typography>
+              <FormHelperText sx={{ marginBottom: '1rem' }}>
+                Here are your final song details and lyrics. Click &quot;Generate Song&quot; to get the final song.
+              </FormHelperText>
+              <Controller
+                name="lyrics"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <LargeTextField
+                    fullWidth
+                    multiline
+                    rows={10}
+                    variant="outlined"
+                    label="Lyrics"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={finalLyrics.content}
+                  />
+                )}
+              />
+              <Controller
+                name="style"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Style"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.style || ''}
+                  />
+                )}
+              />
+              <Controller
+                name="tone"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Tone"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.tone || ''}
+                  />
+                )}
+              />
+              <Controller
+                name="vocalStyle"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Vocal Style"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.vocalStyle || ''}
+                  />
+                )}
+              />
+              <Controller
+                name="accents"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Accents"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.accents || ''}
+                  />
+                )}
+              />
+              <StyledButton
+                type="button"
+                variant="contained"
+                onClick={handlePaymentAndGenerateSong}
+              >
+                Generate Song
+              </StyledButton>
+            </AIResponseCard>
           ) : (
-            <>
-              <AIResponseCard>
-                <Typography variant="h5" gutterBottom>
-                  AI Suggestions
-                </Typography>
-                <FormHelperText sx={{ marginBottom: '1rem' }}>
-                  You can edit the lyrics and style to better match your preferences.
-                </FormHelperText>
-                <Controller
-                  name="lyrics"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <LargeTextField
-                      fullWidth
-                      multiline
-                      rows={10}
-                      variant="outlined"
-                      label="Lyrics"
-                      {...field}
-                      error={!!fieldState.error}
-                      helperText={fieldState.error ? fieldState.error.message : ""}
-                      onChange={(e) => handleEditFinalizedSong("lyrics", e.target.value)}
-                      sx={{
-                        marginBottom: '1rem',
-                        fontFamily: 'Poppins, Nunito, sans-serif',
-                      }}
-                    />
-                  )}
-                />
-                <Controller
-                  name="style"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      label="Style"
-                      {...field}
-                      error={!!fieldState.error}
-                      helperText={fieldState.error ? fieldState.error.message : ""}
-                      onChange={(e) => handleEditFinalizedSong("style", e.target.value)}
-                      sx={{
-                        fontFamily: 'Poppins, Nunito, sans-serif',
-                      }}
-                    />
-                  )}
-                />
-                <Controller
-                  name="songTitle"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      label="Title"
-                      {...field}
-                      error={!!fieldState.error}
-                      helperText={fieldState.error ? fieldState.error.message : ""}
-                      sx={{
-                        fontFamily: 'Poppins, Nunito, sans-serif',
-                      }}
-                    />
-                  )}
-                />
-              </AIResponseCard>
-
-              <PaymentSection>
-                <Typography variant="h5" gutterBottom>
-                  Finalize & Generate Your Song
-                </Typography>
-                <StyledButton
-                  type="button"
-                  variant="contained"
-                  onClick={handlePaymentAndGenerateSong}
-                >
-                  Proceed to Payment & Generate Song
-                </StyledButton>
-              </PaymentSection>
-            </>
+            <AIResponseCard>
+              <Typography variant="h5" gutterBottom>
+                AI Style & Tone Suggestions
+              </Typography>
+              <FormHelperText sx={{ marginBottom: '1rem' }}>
+                Edit the suggestions and click &quot;Generate Final Lyrics&quot; to get the final song lyrics.
+              </FormHelperText>
+              <Controller
+                name="style"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Style"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    onChange={(e) => setValue("style", e.target.value)}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.style || ''}
+                  />
+                )}
+              />
+              <Controller
+                name="tone"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Tone"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    onChange={(e) => setValue("tone", e.target.value)}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.tone || ''}
+                  />
+                )}
+              />
+              <Controller
+                name="vocalStyle"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Vocal Style"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    onChange={(e) => setValue("vocalStyle", e.target.value)}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.vocalStyle || ''}
+                  />
+                )}
+              />
+              <Controller
+                name="accents"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Accents"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    onChange={(e) => setValue("accents", e.target.value)}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                    }}
+                    value={initialResponse?.accents || ''}
+                  />
+                )}
+              />
+              <StyledButton
+                type="button"
+                variant="contained"
+                onClick={onSubmitFinal}
+              >
+                Generate Final Lyrics
+              </StyledButton>
+            </AIResponseCard>
+          )}
+          {openLoginDialog && (
+            <AuthDialog open={openLoginDialog} onClose={handleCloseLoginDialog} />
           )}
         </>
       )}
-      {openLoginDialog && (
-        <AuthDialog open={openLoginDialog} onClose={handleCloseLoginDialog} />
-      )}
-
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Grid,
   Card,
@@ -13,8 +13,24 @@ import {
   Backdrop,
 } from "@mui/material";
 import { PlayArrow, Pause } from "@mui/icons-material";
-import { styled } from "@mui/system";
+import { styled, keyframes } from "@mui/system";
 import { colors } from "@/style/style";
+
+// Keyframe animation for scrolling
+const scrollAnimation = keyframes`
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+`;
+
+const ScrollingContainer = styled('div')({
+  display: 'flex',
+  width: '200%', // Width should be double to create the infinite effect
+  animation: `${scrollAnimation} 20s linear infinite`,
+});
 
 const SongCard = styled(Card)(({ theme }) => ({
   backgroundColor: "#ffffff",
@@ -90,27 +106,26 @@ const mockSongs = [
   },
   {
     id: 3,
-    title: "Echoes in the Rain",
-    style: "Rock, Melancholic",
-    lyrics: "I hear the echoes, in the pouring rain...",
+    title: "Whispers of the Night",
+    style: "Jazz, Smooth",
+    lyrics: "Whispers in the dark, where the light...",
     image: "https://via.placeholder.com/150",
-    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
   },
   {
     id: 4,
-    title: "Echoes in the Rain",
-    style: "Rock, Melancholic",
-    lyrics: "I hear the echoes, in the pouring rain...",
+    title: "Chasing the Sun",
+    style: "Electronic, Upbeat",
+    lyrics: "Chasing the sun, on a path of gold...",
     image: "https://via.placeholder.com/150",
-    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
   },
-  // Add more mock songs as needed
 ];
 
 export default function SongList() {
   const [playingSong, setPlayingSong] = useState<any>(null);
   const [expandedSong, setExpandedSong] = useState<any>(null);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false); // Track animation state
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [style, setStyle] = useState<any>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -139,20 +154,17 @@ export default function SongList() {
   const handleCardClick = (song: any) => {
     if (isAnimating) return;
 
-    // Get the card's bounding box to calculate the position
     const rect = cardRef.current?.getBoundingClientRect();
     const top = rect?.top ?? 0;
     const left = rect?.left ?? 0;
     const width = rect?.width ?? 0;
     const height = rect?.height ?? 0;
 
-    // Calculate the position and size to center the card on screen
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const centerX = windowWidth / 2;
     const centerY = windowHeight / 2;
 
-    // Update style to move and expand the card
     setStyle({
       top: `${centerY - height / 2}px`,
       left: `${centerX - width / 8}px`,
@@ -173,82 +185,85 @@ export default function SongList() {
   };
 
   const handleClose = () => {
-    setStyle({}); // Reset style
+    setStyle({});
     setExpandedSong(null);
   };
 
   return (
     <>
-    <Typography variant="h4" sx={{ mb: 4, textAlign: 'center' }}>
+      <Typography variant="h4" sx={{ mb: 4, textAlign: 'center' }}>
         Latest Generated Song by Our Users
-    </Typography>
-      <Grid container spacing={3}>
-        {mockSongs.map((song) => (
-          <Grid item xs={12} sm={6} md={4} key={song.id}>
-            <SongCard
-              ref={cardRef}
-              onClick={() => handleCardClick(song)}
-              style={expandedSong?.id === song.id ? style : {}}
-            >
-              <CardContentContainer>
-                <CardMedia
-                  component="img"
-                  sx={{ width: 150, height: 150, marginRight: "1rem" }}
-                  image={song.image}
-                  alt={song.title}
-                />
-                <SongCardContent>
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    {song.title}
-                  </Typography>
-
-                  <ExpandableLyrics>
-                    <Typography variant="body2">
-                      {expandedSong && expandedSong.id === song.id
-                        ? song.lyrics
-                        : `${song.lyrics.substring(0, 100)}...`}
+      </Typography>
+      <Box sx={{ overflow: 'hidden', width: '100%' }}>
+        <ScrollingContainer>
+          {mockSongs.concat(mockSongs).map((song, index) => (
+            <Box key={index} sx={{ flex: '0 0 auto', padding: '0 8px' }}>
+              <SongCard
+                ref={cardRef}
+                onClick={() => handleCardClick(song)}
+                style={expandedSong?.id === song.id ? style : {}}
+              >
+                <CardContentContainer>
+                  <CardMedia
+                    component="img"
+                    sx={{ width: 150, height: 150, marginRight: "1rem" }}
+                    image={song.image}
+                    alt={song.title}
+                  />
+                  <SongCardContent>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      {song.title}
                     </Typography>
-                  </ExpandableLyrics>
 
-                  <Box sx={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
-                    <IconButton
-                      color="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePlayPause(song);
-                      }}
-                      sx={{ color: colors.primary }}
-                      disabled={isAnimating} // Disable interaction during animation
-                    >
-                      {playingSong && playingSong.id === song.id ? (
-                        audioRef.current?.paused ? <PlayArrow /> : <Pause />
-                      ) : (
-                        <PlayArrow />
-                      )}
-                    </IconButton>
-                    <Slider
-                      value={audioRef.current?.currentTime || 0}
-                      min={0}
-                      max={audioRef.current?.duration || 100}
-                      onChange={(e, newValue) => {
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = newValue as number;
-                        }
-                      }}
-                      sx={{ ml: 2, flex: 1 }}
-                      disabled={isAnimating} // Disable interaction during animation
-                    />
-                  </Box>
-                </SongCardContent>
-              </CardContentContainer>
-            </SongCard>
-          </Grid>
-        ))}
-      </Grid>
+                    <ExpandableLyrics>
+                      <Typography variant="body2">
+                        {expandedSong && expandedSong.id === song.id
+                          ? song.lyrics
+                          : `${song.lyrics.substring(0, 100)}...`}
+                      </Typography>
+                    </ExpandableLyrics>
+
+                    <Box sx={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
+                      <IconButton
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayPause(song);
+                        }}
+                        sx={{ color: colors.primary }}
+                        disabled={isAnimating}
+                      >
+                        {playingSong && playingSong.id === song.id ? (
+                          audioRef.current?.paused ? <PlayArrow /> : <Pause />
+                        ) : (
+                          <PlayArrow />
+                        )}
+                      </IconButton>
+                      <Slider
+                        value={audioRef.current?.currentTime || 0}
+                        min={0}
+                        max={audioRef.current?.duration || 100}
+                        onChange={(e, newValue) => {
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = newValue as number;
+                          }
+                        }}
+                        sx={{ ml: 2, flex: 1 }}
+                        disabled={isAnimating}
+                      />
+                    </Box>
+                  </SongCardContent>
+                </CardContentContainer>
+              </SongCard>
+            </Box>
+          ))}
+        </ScrollingContainer>
+      </Box>
 
       {expandedSong && (
         <BackdropOverlay open={Boolean(expandedSong)} onClick={handleClose} />
       )}
-    </>
-  );
+
+</>
+  )
 }
