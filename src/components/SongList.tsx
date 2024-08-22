@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
   Grid,
   Card,
@@ -10,7 +10,6 @@ import {
   IconButton,
   Box,
   Slider,
-  Button,
   Backdrop,
 } from "@mui/material";
 import { PlayArrow, Pause } from "@mui/icons-material";
@@ -30,9 +29,6 @@ const SongCard = styled(Card)(({ theme }) => ({
   transition: "transform 0.5s ease, width 0.5s ease, height 0.5s ease, top 0.5s ease, left 0.5s ease",
   "&:hover": {
     transform: "scale(1.02)",
-  },
-  [theme.breakpoints.down("sm")]: {
-    width: "100%",
   },
 }));
 
@@ -69,17 +65,6 @@ const ExpandableLyrics = styled(Box)({
   position: "relative",
 });
 
-const ExpandButton = styled(Button)({
-  position: "absolute",
-  bottom: "0",
-  left: "0",
-  right: "0",
-  backgroundColor: "rgba(0,0,0,0.5)",
-  color: "white",
-  textAlign: "center",
-  borderTop: "1px solid white",
-});
-
 const BackdropOverlay = styled(Backdrop)({
   zIndex: 1200,
   color: "#fff",
@@ -97,6 +82,22 @@ const mockSongs = [
   },
   {
     id: 2,
+    title: "Echoes in the Rain",
+    style: "Rock, Melancholic",
+    lyrics: "I hear the echoes, in the pouring rain...",
+    image: "https://via.placeholder.com/150",
+    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+  },
+  {
+    id: 3,
+    title: "Echoes in the Rain",
+    style: "Rock, Melancholic",
+    lyrics: "I hear the echoes, in the pouring rain...",
+    image: "https://via.placeholder.com/150",
+    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+  },
+  {
+    id: 4,
     title: "Echoes in the Rain",
     style: "Rock, Melancholic",
     lyrics: "I hear the echoes, in the pouring rain...",
@@ -157,18 +158,18 @@ export default function SongList() {
       left: `${centerX - width / 8}px`,
       width: "80%",
       height: "auto",
+      cursor: "auto",
       position: "fixed",
       zIndex: 1300,
       transform: "translate(-50%, -50%) scale(1.1)",
     });
 
-    setIsAnimating(true); // Start animation
+    setIsAnimating(true);
     setExpandedSong(song);
 
-    // After animation completes, remove animation state
     setTimeout(() => {
       setIsAnimating(false);
-    }, 500); // Match this to the animation duration
+    }, 500);
   };
 
   const handleClose = () => {
@@ -178,20 +179,9 @@ export default function SongList() {
 
   return (
     <>
-      <Grid container spacing={4}>
-        {mockSongs.map((song, index) => (
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={3} // 4 columns per row on medium and larger screens
-            key={song.id}
-            sx={{
-              position: "relative",
-              top: index >= 4 ? "20px" : "0", // Offset every row after the first
-              left: index % 4 >= 2 ? "30px" : "0", // Horizontal offset for every 3rd and 4th item in a row
-            }}
-          >
+      <Grid container spacing={8}>
+        {mockSongs.map((song) => (
+          <Grid item xs={12} sm={6} md={4} key={song.id}>
             <SongCard
               ref={cardRef}
               onClick={() => handleCardClick(song)}
@@ -215,7 +205,6 @@ export default function SongList() {
                         ? song.lyrics
                         : `${song.lyrics.substring(0, 100)}...`}
                     </Typography>
-                    
                   </ExpandableLyrics>
 
                   <Box sx={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
@@ -255,9 +244,7 @@ export default function SongList() {
       </Grid>
 
       {expandedSong && (
-        <>
-          <BackdropOverlay open={Boolean(expandedSong)} onClick={handleClose} />
-        </>
+        <BackdropOverlay open={Boolean(expandedSong)} onClick={handleClose} />
       )}
     </>
   );
