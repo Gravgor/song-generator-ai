@@ -43,6 +43,7 @@ export async function generateLyrics(songIdea: string,
   accents?: string,
 ): Promise<AISuggestions> {
   try {
+    /*
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -50,10 +51,78 @@ export async function generateLyrics(songIdea: string,
         { role: "user", content: `Based on the following song idea and details, generate a lyrics: ${songIdea}` },
         { role: "assistant", content: `Style: ${style}\n\nTone: ${tone}\n\nVocal Style: ${vocalStyle}\n\nAccents: ${accents}` },
       ],
-    });
+    });*/
     return {
       role: "assistant",
-      content: completion.choices[0].message.content || "No lyrics generated",
+      content: JSON.stringify(`**Title: Rise From the Ashes**
+
+**Verse 1:**
+In the shadows where I linger,
+Wounds are deep, they cut like knives,
+A heart once bright, now feels like winter,
+But I’m more than just my scars, I’m alive.
+
+**Pre-Chorus:**
+I’ve walked through fires, faced my fears,
+Fallen hard, drowned in tears,
+But every whisper of despair,
+Turns to strength when I declare...
+
+**Chorus:**
+I’m gonna rise from the ashes,
+Like a phoenix in the sky,
+No more chains, no more crashes,
+Watch me soar, watch me fly.
+I won't back down, I won’t surrender,
+With every breath, I’m breaking free,
+This is my time, my heart's a warrior,
+I’ll be the light that you can see.
+
+**Verse 2:**
+Storms may rage, but I’ll keep walking,
+With every step, I’m reclaiming me,
+Through the silence, I hear my calling,
+In the wreckage, I find my peace.
+
+**Pre-Chorus:**
+These broken dreams won't hold me back,
+I’ll rebuild from all the cracks,
+With every shatter, I’ll reframe,
+Rising stronger, feel the flame…
+
+**Chorus:**
+I’m gonna rise from the ashes,
+Like a phoenix in the sky,
+No more chains, no more crashes,
+Watch me soar, watch me fly.
+I won't back down, I won’t surrender,
+With every breath, I’m breaking free,
+This is my time, my heart's a warrior,
+I’ll be the light that you can see.
+
+**Bridge:**
+Now I stand with scars as my crown,
+Every bruise, a story profound,
+I’m the warrior, I’m the dreamer,
+With a fire that burns forever brighter.
+
+**Chorus:**
+I’m gonna rise from the ashes,
+Like a phoenix in the sky,
+No more chains, no more crashes,
+Watch me soar, watch me fly.
+I won't back down, I won’t surrender,
+With every breath, I’m breaking free,
+This is my time, my heart's a warrior,
+I’ll be the light that you can see.
+
+**Outro:**
+So here I am, standing tall,
+No more shadows, I’ve conquered it all,
+With the strength of a thousand hearts,
+I’ll rise, I’ll shine, I’ve made a new start.
+I’ll rise from the ashes, watch me fly,
+I’m unstoppable, reaching high`),
       refusal: null,
     };
     }

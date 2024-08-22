@@ -9,7 +9,7 @@ import { SongGenerationSchema } from '@/schema/yup';
 import { colors } from '@/style/style';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
-import { parseAISongDetails } from '@/helpers/parseResponse';
+import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
 import generateSongDetails, { generateLyrics } from '@/actions/actions';
 
 const SongIdeaCard = styled(Card)({
@@ -95,11 +95,12 @@ export default function SongCreationForm() {
   };
 
   const onSubmitFinal: SubmitHandler<any> = async (data) => {
-    console.log(data);
     setLoading(true);
     const request = await generateLyrics(getValues("songIdea"), getValues("style"), getValues("tone"), getValues("vocalStyle"), getValues("accents")
     );
-    setFinalLyrics(request);
+    const parseLyrics = parseAILyrics(request.content);
+    console.log(parseLyrics);
+    setFinalLyrics(parseLyrics);
     setLoading(false);
   };
 
@@ -190,7 +191,7 @@ export default function SongCreationForm() {
           ) : finalLyrics ? (
             <AIResponseCard>
               <Typography variant="h5" gutterBottom>
-                Final Lyrics
+                Final Lyrics Of Your Song &quot;<span className='font-bold'>{finalLyrics.title}</span>&quot;
               </Typography>
               <FormHelperText sx={{ marginBottom: '1rem' }}>
                 Here are your final song details and lyrics. Click &quot;Generate Song&quot; to get the final song.
@@ -211,8 +212,9 @@ export default function SongCreationForm() {
                     sx={{
                       marginBottom: '1rem',
                       fontFamily: 'Poppins, Nunito, sans-serif',
+                      whiteSpace: 'pre-line',
                     }}
-                    value={finalLyrics.content}
+                    value={finalLyrics.lyrics}
                   />
                 )}
               />
