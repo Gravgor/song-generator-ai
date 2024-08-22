@@ -1,27 +1,67 @@
 "use client";
+import { useState } from 'react';
 import { styled } from '@mui/system';
-import { Typography, Button, Container, Box } from "@mui/material";
+import { Typography, Button, Container, Box, TextField } from "@mui/material";
 
 const HeroSection = styled(Box)({
-    padding: '4rem 0',
-    textAlign: 'center',
-    color: '#333', 
-  });
+  padding: '4rem 0',
+  textAlign: 'center',
+  color: '#333',
+});
+
+const StyledTextField = styled(TextField)({
+  marginBottom: '1rem',
+  maxWidth: '600px', 
+});
+
+const StyledButton = styled(Button)({
+  marginTop: '1rem',
+});
 
 export default function Hero() {
-    return (
-        <HeroSection>
-        <Container maxWidth="md">
-          <Typography variant="h2" gutterBottom>
-            Create Your Perfect Song with AI
-          </Typography>
-          <Typography variant="h5" gutterBottom>
-            Transform your ideas into lyrics, and let AI generate a song just for you.
-          </Typography>
-          <Button href='/create-song' variant="contained" color="primary" size="large" sx={{ mt: 4 }}>
-            Get Started
-          </Button>
-        </Container>
-      </HeroSection>
-    )
+  const [songIdea, setSongIdea] = useState("");
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSongIdea(event.target.value);
+  };
+
+  const handleSubmit = () => {
+    // Handle the song idea submission, e.g., navigate to a different page or make an API call
+    console.log("Song Idea Submitted:", songIdea);
+    // Optionally redirect to a song creation page with the idea
+    window.location.href = `/create-song?idea=${encodeURIComponent(songIdea)}`;
+  };
+
+  return (
+    <HeroSection>
+      <Container maxWidth="md">
+        <Typography variant="h2" gutterBottom>
+          Create Your Perfect Song with AI
+        </Typography>
+        <Typography variant="h5" gutterBottom>
+          Transform your ideas into lyrics, and let AI generate a song just for you.
+        </Typography>
+        
+        <StyledTextField
+          sx={{ mt: 4 }}
+          fullWidth
+          variant="outlined"
+          placeholder="Describe your song idea..."
+          value={songIdea}
+          onChange={handleInputChange}
+        />
+        
+        <Box>
+          <StyledButton
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={handleSubmit}
+          >
+            Generate Your Song Now
+          </StyledButton>
+        </Box>
+      </Container>
+    </HeroSection>
+  );
 }
