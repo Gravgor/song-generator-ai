@@ -18,7 +18,7 @@ export default function Hero() {
           <Typography variant="h5" gutterBottom>
             Transform your ideas into lyrics, and let AI generate a song just for you.
           </Typography>
-          <Button variant="contained" color="primary" size="large" sx={{ mt: 4 }}>
+          <Button href='/create-song' variant="contained" color="primary" size="large" sx={{ mt: 4 }}>
             Get Started
           </Button>
         </Container>

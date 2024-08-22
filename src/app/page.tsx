@@ -1,34 +1,18 @@
 'use client';
-import { AppBar, Toolbar, Typography, Button, Container, Box, Grid, Card, CardContent, IconButton, Tooltip, CardMedia } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Box, Grid, Card, Container, CardContent, IconButton, Tooltip, CardMedia } from "@mui/material";
 import { PlayArrow } from '@mui/icons-material';
 import { styled } from '@mui/system';
 import { SetStateAction, useState } from "react";
 import Hero from "@/components/Hero";
+import MainContainer from "@/components/Containter";
+import { colors } from "@/style/style";
 
-// Define the color palette
-const colors = {
-  primary: '#A8DADC', // Soft Pastel Blue
-  secondary: '#FF6F61', // Light Coral
-  background: '#F1FAEE', // Off-White
-  text: '#333333', // Charcoal Gray
-  buttonText: '#FFFFFF', // White
-};
 
-// Custom styled components
-const MainContainer = styled(Box)({
-  background: `linear-gradient(to bottom, #FFFFFF, ${colors.background})`, // Gradient from white to Off-White background
-  minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  color: colors.text, // Charcoal Gray text
-  fontFamily: 'Poppins, Nunito, sans-serif', // Rounded, modern sans-serif fonts
-});
 
 const FeatureCard = styled(Card)({
-  backgroundColor: '#fff', // White card for a clean, modern appearance
-  color: colors.text, // Charcoal Gray text for readability
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Light shadow for subtle depth
+  backgroundColor: '#fff', 
+  color: colors.text,
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
   borderRadius: '8px',
 });
 
@@ -37,25 +21,25 @@ const SongListContainer = styled(Container)({
 });
 
 const SongCard = styled(Card)({
-  backgroundColor: '#ffffff', // White background
+  backgroundColor: '#ffffff', 
   borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
   height: '100%',
-  transition: 'transform 0.2s ease-in-out', // Smooth hover effect
+  transition: 'transform 0.2s ease-in-out', 
   '&:hover': {
-    transform: 'scale(1.05)', // Scale up slightly on hover
+    transform: 'scale(1.05)', 
   },
 });
 
 const StyledButton = styled(Button)({
-  backgroundColor: colors.primary, // Soft Pastel Blue for buttons
-  color: colors.buttonText, // White button text
+  backgroundColor: colors.primary, 
+  color: colors.buttonText, 
   fontWeight: 'bold',
   '&:hover': {
-    backgroundColor: colors.secondary, // Change to Light Coral on hover
+    backgroundColor: colors.secondary, 
   },
 });
 
@@ -70,16 +54,15 @@ const mockSongs = [
     title: "Dreams of Tomorrow",
     style: "Pop, Upbeat",
     lyrics: "Life is just a journey, Take it step by step...",
-    image: "https://via.placeholder.com/150", // Placeholder image URL
+    image: "https://via.placeholder.com/150", 
   },
   {
     id: 2,
     title: "Echoes in the Rain",
     style: "Rock, Melancholic",
     lyrics: "I hear the echoes, in the pouring rain...",
-    image: "https://via.placeholder.com/150", // Placeholder image URL
+    image: "https://via.placeholder.com/150",
   },
-  // Add more mock songs as needed
 ];
 
 export default function MainPage() {
@@ -87,7 +70,7 @@ export default function MainPage() {
 
   const handlePlaySong = (song: any) => {
     setPlayingSong(song);
-    // Add your song playing logic here
+    
   };
 
   return (
@@ -128,7 +111,7 @@ export default function MainPage() {
                   <IconButton
                     color="primary"
                     onClick={() => handlePlaySong(song)}
-                    sx={{ color: colors.primary }} // Soft Pastel Blue for play button
+                    sx={{ color: colors.primary }} 
                   >
                     <PlayArrow />
                   </IconButton>
