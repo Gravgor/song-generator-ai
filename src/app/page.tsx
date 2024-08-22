@@ -1,113 +1,154 @@
-import Image from "next/image";
+'use client';
+import { AppBar, Toolbar, Typography, Button, Container, Box, Grid, Card, CardContent, IconButton, Tooltip } from "@mui/material";
+import { PlayArrow } from '@mui/icons-material';
+import { styled } from '@mui/system';
+import { SetStateAction, useState } from "react";
+import Hero from "@/components/Hero";
 
-export default function Home() {
+const MainContainer = styled(Box)({
+  backgroundColor: '#F1FAEE', // Light grey background for a clean, neutral look
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  color: '#333333', // Dark text for contrast
+});
+
+
+const FeatureCard = styled(Card)({
+  backgroundColor: '#fff', // White card for a clean, modern appearance
+  color: '#333', // Dark text for readability
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Light shadow for subtle depth
+});
+
+const Logo = styled('img')({
+  height: 50, // Adjust height according to your logo size
+  marginRight: 16, // Space between logo and site title
+});
+
+const SongListContainer = styled(Container)({
+  padding: '2rem 0',
+});
+
+const SongItem = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '1rem',
+  backgroundColor: '#ffffff',
+  borderRadius: '8px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  marginBottom: '1rem',
+  '&:hover': {
+    backgroundColor: '#f0f0f0',
+  },
+});
+
+const SongDetailsTooltip = styled('div')({
+  padding: '1rem',
+  maxWidth: '300px',
+});
+
+const mockSongs = [
+  {
+    id: 1,
+    title: "Dreams of Tomorrow",
+    style: "Pop, Upbeat",
+    lyrics: "Life is just a journey, Take it step by step...",
+  },
+  {
+    id: 2,
+    title: "Echoes in the Rain",
+    style: "Rock, Melancholic",
+    lyrics: "I hear the echoes, in the pouring rain...",
+  },
+];
+
+export default function MainPage() {
+  const [playingSong, setPlayingSong] = useState(null);
+
+  const handlePlaySong = (song: any) => {
+    setPlayingSong(song);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <MainContainer>
+    <Hero />
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <FeatureCard>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Custom Lyrics
+                </Typography>
+                <Typography>
+                  Create and edit song lyrics easily with our AI-powered editor.
+                </Typography>
+              </CardContent>
+            </FeatureCard>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FeatureCard>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  AI Song Generation
+                </Typography>
+                <Typography>
+                  Generate unique songs based on your lyrics and ideas.
+                </Typography>
+              </CardContent>
+            </FeatureCard>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FeatureCard>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Manage Your Creations
+                </Typography>
+                <Typography>
+                  Save and manage your songs, edit them anytime, and share them with the world.
+                </Typography>
+              </CardContent>
+            </FeatureCard>
+          </Grid>
+        </Grid>
+      </Container>
+      
+      <SongListContainer maxWidth="lg">
+        <Typography variant="h4" gutterBottom>
+          Recently Generated Songs
+        </Typography>
+        {mockSongs.map((song) => (
+          <SongItem key={song.id}>
+            <Box>
+              <Tooltip
+                title={
+                  <SongDetailsTooltip>
+                    <Typography variant="body1"><strong>Style:</strong> {song.style}</Typography>
+                    <Typography variant="body1"><strong>Lyrics:</strong> {song.lyrics}</Typography>
+                  </SongDetailsTooltip>
+                }
+                arrow
+                placement="right"
+              >
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  {song.title}
+                </Typography>
+              </Tooltip>
+            </Box>
+            <IconButton color="primary" onClick={() => handlePlaySong(song)}>
+              <PlayArrow />
+            </IconButton>
+          </SongItem>
+        ))}
+      </SongListContainer>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <Box component="footer" sx={{ py: 3, textAlign: 'center' }}>
+        <Typography variant="body2">
+          &copy; 2024 AI Song Creator. All rights reserved.
+        </Typography>
+      </Box>
+    </MainContainer>
   );
 }
