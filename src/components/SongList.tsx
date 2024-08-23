@@ -156,7 +156,7 @@ export default function SongList() {
     setStyle({
       top: `${centerY - height / 2}px`,
       left: `${centerX - width / 8}px`,
-      width: "80%",
+      width: "18%",
       height: "auto",
       cursor: "auto",
       position: "fixed",
@@ -191,7 +191,88 @@ export default function SongList() {
               style={expandedSong?.id === song.id ? style : {}}
             >
               <CardContentContainer>
-                <CardMedia
+                {expandedSong?.id === song.id ? (
+                  <>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-2">
+                      <CardMedia
+                        component="img"
+                        sx={{ width: 200, height: 200, marginRight: "1rem" }}
+                        image={song.image}
+                        alt={song.title}
+                      />
+                      <SongCardContent>
+                        <Typography variant="h6" sx={{ mb: 1 }}>
+                          {song.title}
+                        </Typography>
+                        <Typography variant="body2">
+                        <span className="font-bold">
+                            Style
+                          </span>: {song.style}
+                        </Typography>
+                        <Typography variant="body2">
+                          <span className="font-bold">
+                            Influences
+                          </span>: Pop, Rock
+                        </Typography>
+                        <Typography variant="body2">
+                        <span className="font-bold">
+                            Tone
+                          </span>: Pop, Rock
+                        </Typography>
+                        <Typography variant="body2">
+                        <span className="font-bold">
+                            Vocals
+                          </span>: Pop, Rock
+                        </Typography>
+                        <Typography variant="body2">
+                        <span className="font-bold">
+                            Accent
+                          </span>: Pop, Rock
+                        </Typography>
+                      </SongCardContent>
+                    </div>
+                    <SongCardContent>
+                      <ExpandableLyrics>
+                        <Typography variant="body2">
+                          <span className="font-bold">Lyrics</span>: {song.lyrics}
+                        </Typography>
+                      </ExpandableLyrics>
+                    </SongCardContent>
+                    <div className="flex gap-2">
+                      <IconButton
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayPause(song);
+                        }}
+                        sx={{ color: colors.primary }}
+                        disabled={isAnimating} // Disable interaction during animation
+                      >
+                        {playingSong && playingSong.id === song.id ? (
+                          audioRef.current?.paused ? <PlayArrow /> : <Pause />
+                        ) : (
+                          <PlayArrow />
+                        )}
+                      </IconButton>
+                      <Slider
+                        value={audioRef.current?.currentTime || 0}
+                        min={0}
+                        max={audioRef.current?.duration || 100}
+                        onChange={(e, newValue) => {
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = newValue as number;
+                          }
+                        }}
+                        sx={{ ml: 2, flex: 1 }}
+                        disabled={isAnimating} 
+                      />
+                    </div>
+                  </div>
+                  </>
+                ) : (
+                  <>
+                  <CardMedia
                   component="img"
                   sx={{ width: 150, height: 150, marginRight: "1rem" }}
                   image={song.image}
@@ -236,10 +317,12 @@ export default function SongList() {
                         }
                       }}
                       sx={{ ml: 2, flex: 1 }}
-                      disabled={isAnimating} // Disable interaction during animation
+                      disabled={isAnimating} 
                     />
                   </Box>
                 </SongCardContent>
+                  </>
+                )}
               </CardContentContainer>
             </SongCard>
           </Grid>

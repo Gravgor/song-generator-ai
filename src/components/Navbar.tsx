@@ -3,6 +3,9 @@
 import { styled } from '@mui/system';
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import Link from 'next/link';
+import { useState } from 'react';
+import AuthDialog from './AuthDialog';
+import { signOut } from 'next-auth/react';
 
 const Logo = styled('img')({
     height: 50, 
@@ -15,7 +18,13 @@ type NavbarProps = {
 }
 
 export default function Navbar({ email, avatar }: NavbarProps) {
+  const [openLoginDialog, setOpenLoginDialog] = useState<boolean>(false);
+  const handleCloseLoginDialog = () => {
+    setOpenLoginDialog(false);
+  };
+
    return (
+    <>
     <AppBar position="static" color="inherit" elevation={0} sx={{ backgroundColor: '#FFFFFF' }}>
     <Toolbar>
       <Link href="/">
@@ -29,16 +38,20 @@ export default function Navbar({ email, avatar }: NavbarProps) {
           <Button color="inherit" sx={{ textTransform: 'none' }}>
             {email}
           </Button>
-          <Button color="primary">
+          <Button color="primary" onClick={(e) => signOut()}>
             LOG OUT
           </Button>
         </div>
       ) : (
-        <Link href="/auth/signin">
-          <Button color="primary">Login</Button>
-        </Link>
+          <Button color="primary" onClick={(e) => {
+            setOpenLoginDialog(true);
+          }}>Login</Button>
       )}
     </Toolbar>
   </AppBar>
+   {openLoginDialog && (
+    <AuthDialog open={openLoginDialog} onClose={handleCloseLoginDialog} />
+  )}
+  </>
    ) 
 }
