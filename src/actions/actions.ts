@@ -76,7 +76,7 @@ export async function generateLyrics(songIdea: string,
 
 
   export async function handlePaymentAndSongGeneration(data : SongCreationFormValues) {
-    const apiKey = process.env.GOAPI_API_KEY;
+    /*const apiKey = process.env.GOAPI_API_KEY;
     const request = await fetch(`${process.env.GOAPI_URL}`,{
       method: "POST",
       body: JSON.stringify({
@@ -104,7 +104,7 @@ export async function generateLyrics(songIdea: string,
     })
     const taskResponse = await taskRequest.json()
     console.log(taskResponse)
-    return taskResponse
+    return taskResponse*/
 }
 
 

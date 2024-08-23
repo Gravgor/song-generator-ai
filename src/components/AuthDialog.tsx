@@ -29,7 +29,11 @@ const AuthDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) =
   };
 
   const handleLogin = () => {
-    signIn('credentials', { email, password });
+    try {
+      signIn('credentials', { email, password });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleRegister = async () => {
