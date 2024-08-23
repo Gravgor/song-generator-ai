@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+"use client";
+import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, TextField, Button, Tab, Tabs } from '@mui/material';
 import { styled } from '@mui/system';
 import { useAuth } from '@/hooks/useAuth';
 import { colors } from '@/style/style';
 import { createUser } from '@/actions/actions';
 import { signIn } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 
 
 const StyledButton = styled(Button)({
@@ -23,6 +25,7 @@ const AuthDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) =
   const [username, setUsername] = useState('');
   
   const { login, register } = useAuth(); 
+  const pathname = usePathname();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: 'login' | 'register') => {
     setTabValue(newValue);
@@ -30,7 +33,8 @@ const AuthDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) =
 
   const handleLogin = () => {
     try {
-      signIn('credentials', { email, password });
+      signIn('credentials',
+         { email, password, callbackUrl: `http://localhost:3000/${pathname}` });
     } catch (error) {
       console.error(error);
     }

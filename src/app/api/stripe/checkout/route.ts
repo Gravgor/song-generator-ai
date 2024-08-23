@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
                     quantity: 1,
                 },
             ],
-            success_url: `${process.env.NEXT_PUBLIC_URL}/success`,
-            cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
+            success_url: `${process.env.NEXT_BASE_URL}/create-song`,
+            cancel_url: `${process.env.NEXT_BASE_URL}/cancel`,
             metadata: {
                 userId: data.userId,
             }

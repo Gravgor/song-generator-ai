@@ -9,10 +9,11 @@ import { SongGenerationSchema } from '@/schema/yup';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { generateLyrics, handlePaymentAndSongGeneration } from '@/actions/actions';
+import generateSongDetails, { checkOutStripe, generateLyrics } from '@/actions/actions';
 import { StyledButton } from './Button';
 import { AIResponseCard, SongIdeaCard } from './Cards';
 import { SongCreationLoading } from './SongCreationLoading';
+import { loadStripe } from '@stripe/stripe-js';
 
 const PaymentSection = styled(Box)({
   backgroundColor: '#fff',
@@ -28,6 +29,15 @@ const LargeTextField = styled(TextField)({
   padding: '1rem',
 });
 
+const PricingInfo = styled(Box)({
+  padding: '1rem',
+  borderRadius: '8px',
+  backgroundColor: '#f5f5f5',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  marginTop: '1rem',
+  textAlign: 'center',
+});
+
 export default function SongCreationForm({ session }: any) {
   const [initialResponse, setInitialResponse] = useState<any>(null);
   const [finalLyrics, setFinalLyrics] = useState<any>(null);
@@ -35,6 +45,7 @@ export default function SongCreationForm({ session }: any) {
   const [isAIResponseReceived, setIsAIResponseReceived] = useState<boolean>(false);
   const [openLoginDialog, setOpenLoginDialog] = useState<boolean>(false);
   const [step, setStep] = useState(0); // Added step state for progress tracking
+  const [generationCount, setGenerationCount] = useState(1); // Track the number of generations
 
   const searchParams = useSearchParams();
   const { control, handleSubmit, setValue, getValues } = useForm({
@@ -54,7 +65,6 @@ export default function SongCreationForm({ session }: any) {
     setLoading(true);
     const request = await generateSongDetails(data.songIdea);
     const parsedResponse = parseAISongDetails(request.content);
-    console.log(parsedResponse);
     setValue("style", parsedResponse.style);
     setValue("tone", parsedResponse.tone);
     setValue("vocalStyle", parsedResponse.vocalStyle);
@@ -63,6 +73,7 @@ export default function SongCreationForm({ session }: any) {
     setIsAIResponseReceived(true);
     setLoading(false);
     setStep(1); // Move to the next step
+    setGenerationCount(1); // Reset generation count for new session
   };
 
   const onSubmitFinal: SubmitHandler<any> = async (data) => {
@@ -75,10 +86,10 @@ export default function SongCreationForm({ session }: any) {
       getValues("influences"),
     );
     const parseLyrics = parseAILyrics(request.content);
-    console.log(parseLyrics);
     setFinalLyrics(parseLyrics);
     setLoading(false);
     setStep(2); // Move to the final step
+    setGenerationCount(2); // Increment generation count after final lyrics
   };
 
   useEffect(() => {
@@ -97,9 +108,30 @@ export default function SongCreationForm({ session }: any) {
 
   const handlePaymentAndGeneration = async () => {
     if (session !== null) {
-      console.log("Payment successful, generating song...");
-      const response = await handlePaymentAndSongGeneration(getValues());
-      console.log(response);
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
+      if(!stripe) {
+        console.error("Stripe not initialized");
+        return;
+      }
+      try {
+        const priceId = generationCount === 1 ? 'price_1Pr3pQHB9eXojLqLP82Jl7T6' : 'price_1Pr3pQHB9eXojLqLP82Jl7T7';
+        const response = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          body: JSON.stringify({ priceId }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        const session = await response.json()
+        if(!session) {
+          throw new Error("No session returned")
+        }
+        const result = await stripe.redirectToCheckout({
+          sessionId: session.result.id,
+        })
+      } catch (error) {
+        console.error("Error checking out with Stripe:", error)
+      }
     } else {
       setOpenLoginDialog(true);
     }
@@ -116,7 +148,7 @@ export default function SongCreationForm({ session }: any) {
   return (
     <>
       <Box sx={{ width: '100%', marginBottom: '1rem', marginLeft: '2.2rem' }}>
-      <Slider
+        <Slider
           value={step}
           min={0}
           max={2}
@@ -137,11 +169,10 @@ export default function SongCreationForm({ session }: any) {
               onSubmitInitial(getValues());
             }}
           >
-            
             <SongIdeaCard>
-            <Typography variant="h6" gutterBottom>
-            Step 1: Enter Your Song Idea
-          </Typography>
+              <Typography variant="h6" gutterBottom>
+                Step 1: Enter Your Song Idea
+              </Typography>
               <Controller
                 name="songIdea"
                 control={control}
@@ -162,7 +193,7 @@ export default function SongCreationForm({ session }: any) {
                   />
                 )}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'flex', marginTop: '1rem' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <StyledButton
                   type="submit"
                   variant="contained"
@@ -175,7 +206,7 @@ export default function SongCreationForm({ session }: any) {
                   <Typography variant="body1" sx={{ color: 'text.secondary' }}>
                     {isAIResponseReceived ? "AI Suggestions Generated!" : ""}
                   </Typography>
-                  </Box>
+                </Box>
               </Box>
             </SongIdeaCard>
           </form>
@@ -187,9 +218,9 @@ export default function SongCreationForm({ session }: any) {
             <SongCreationLoading />
           ) : (
             <AIResponseCard>
-                        <Typography variant="h6" gutterBottom>
-            Step 2: AI Suggestions
-          </Typography>
+              <Typography variant="h6" gutterBottom>
+                Step 2: AI Suggestions
+              </Typography>
               <FormHelperText sx={{ marginBottom: '1rem' }}>
                 Edit the suggestions and click &quot;Generate Final Lyrics&quot; to get the final song lyrics.
               </FormHelperText>
@@ -312,7 +343,7 @@ export default function SongCreationForm({ session }: any) {
                 Step 3: Final Lyrics Of Your Song &quot;<span className='font-bold'>{finalLyrics?.title}</span>&quot;
               </Typography>
               <FormHelperText sx={{ marginBottom: '1rem' }}>
-                Here are your final song details and lyrics. Click &quot;Generate Song&quot; to get the final song.
+                Here are your final song details and lyrics. Click `&quot;`Generate Song`&quot;` to get the final song.
               </FormHelperText>
               <Controller
                 name="lyrics"
@@ -412,6 +443,15 @@ export default function SongCreationForm({ session }: any) {
                   />
                 )}
               />
+              <PricingInfo>
+                <Typography variant="h6">Pricing Information</Typography>
+                <Typography variant="body1" sx={{ marginBottom: '0.5rem' }}>
+                  First generation: £0.99
+                </Typography>
+                <Typography variant="body1">
+                  Additional generations: £5.00 each
+                </Typography>
+              </PricingInfo>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <StyledButton
                   variant="outlined"
@@ -427,14 +467,6 @@ export default function SongCreationForm({ session }: any) {
                   onClick={handlePaymentAndGeneration}
                 >
                   Generate Song
-                </StyledButton>
-                <StyledButton
-                  variant="contained"
-                  onClick={handleNext}
-                  disabled={step === 2 || loading}
-                  sx={{ marginLeft: '1rem' }}
-                >
-                  Next
                 </StyledButton>
               </Box>
             </AIResponseCard>

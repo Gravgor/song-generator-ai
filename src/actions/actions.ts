@@ -4,10 +4,11 @@ import { User } from "@/types/User";
 import bcrypt from "bcrypt";
 import OpenAI from "openai";
 import {prisma} from "@/lib/prisma";
+import { loadStripe } from "@stripe/stripe-js";
 const openai = new OpenAI();
 
 export default async function generateSongDetails(songIdea: string): Promise<AISuggestions> {
-    try {
+    /*try {
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
@@ -30,7 +31,7 @@ export default async function generateSongDetails(songIdea: string): Promise<AIS
             content: "Error generating song details",
             refusal: null,
         };
-    }
+    }*/
    const mockData = {
     "role": "assistant",
     "content": "Style: Power Ballad/Pop Rock\n\nInfluences: The song takes inspiration from the empowering music of artists such as Journey, Bruce Springsteen, Queen, Rachel Platten, and Sia.\n\nTone: The song will carry an empowering and motivational tone, touching on themes of perseverance, overcoming adversity, and personal growth. The verses will have a darker tone to depict the struggle, switching to triumphant and uplifting in the chorus to demonstrate victory and resilience.\n\nVocal Style: The vocals should be robust and dynamic, versatile enough to capture the softer moments of struggle but powerful and fearless when representing triumph. The vocal style would embody characteristics of great rock/pop powerhouses like Freddie Mercury or Kelly Clarkson.\n\nAccents: For the instrumental accents, it would include soaring guitar solos or complementary string sections that emphasize the highs and lows of the protagonist's journey. Piano undertones can also be used to add a layer of depth and introspection. For vocal accents, we'll use belting, emphasizing key words and phrases to underline the protagonist's determination and strength. Adding backing vocals or choir elements during the choruses will reinforce the feeling of triumphant resilience.",
@@ -75,8 +76,8 @@ export async function generateLyrics(songIdea: string,
 
 
 
-  export async function handlePaymentAndSongGeneration(data : SongCreationFormValues) {
-    /*const apiKey = process.env.GOAPI_API_KEY;
+  export async function handleSongGeneration(data : SongCreationFormValues) {
+    const apiKey = process.env.GOAPI_API_KEY;
     const request = await fetch(`${process.env.GOAPI_URL}`,{
       method: "POST",
       body: JSON.stringify({
@@ -104,7 +105,7 @@ export async function generateLyrics(songIdea: string,
     })
     const taskResponse = await taskRequest.json()
     console.log(taskResponse)
-    return taskResponse*/
+    return taskResponse
 }
 
 
@@ -134,4 +135,36 @@ export async function createUser(email: string, username: string, password: stri
         },
     });
     return user as unknown as User;
+}
+
+
+/// STRIPE 
+
+export async function checkOutStripe(priceId: string) {
+  const apiKey = process.env.PUBLIC_STRIPE_PUBLIC_KEY
+  if(!apiKey) {
+    throw new Error("Stripe public key not found")
+  }
+  const stripe = await loadStripe(apiKey)
+  if(!stripe) {
+    throw new Error("Stripe not loaded")
+  }
+  try {
+    const response = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      body: JSON.stringify({ priceId }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    const session = await response.json()
+    if(!session) {
+      throw new Error("No session returned")
+    }
+    const result = await stripe.redirectToCheckout({
+      sessionId: session.result.id,
+    })
+  } catch (error) {
+    console.error("Error checking out with Stripe:", error)
+  }
 }
