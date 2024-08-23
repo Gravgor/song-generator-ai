@@ -11,7 +11,6 @@ import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
 import generateSongDetails, { generateLyrics, handlePaymentAndSongGeneration } from '@/actions/actions';
-import { Session } from 'next-auth';
 
 const SongIdeaCard = styled(Card)({
   backgroundColor: '#fff',
@@ -85,6 +84,7 @@ export default function SongCreationForm({session} : any) {
     setLoading(true);
     const request = await generateSongDetails(data.songIdea);
     const parsedResponse = parseAISongDetails(request.content);
+    console.log(parsedResponse);
     setValue("style", parsedResponse.style);
     setValue("tone", parsedResponse.tone);
     setValue("vocalStyle", parsedResponse.vocalStyle);

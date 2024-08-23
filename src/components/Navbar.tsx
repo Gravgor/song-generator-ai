@@ -9,8 +9,12 @@ const Logo = styled('img')({
     marginRight: 16,
   });
   
+type NavbarProps = {
+  email?: string | null;
+  avatar?: string | null;
+}
 
-export default function Navbar() {
+export default function Navbar({ email, avatar }: NavbarProps) {
    return (
     <AppBar position="static" color="inherit" elevation={0} sx={{ backgroundColor: '#FFFFFF' }}>
     <Toolbar>
@@ -20,10 +24,20 @@ export default function Navbar() {
       <Typography variant="h6" sx={{ flexGrow: 1, color: '#333333' }}>
         TuneCraft - AI Song Creator
       </Typography>
-      <Button color="primary">Login</Button>
-      <Button variant="outlined" color="primary">
-        Sign Up
-      </Button>
+      {email ? (
+        <div>
+          <Button color="inherit" sx={{ textTransform: 'none' }}>
+            {email}
+          </Button>
+          <Button color="primary">
+            LOG OUT
+          </Button>
+        </div>
+      ) : (
+        <Link href="/auth/signin">
+          <Button color="primary">Login</Button>
+        </Link>
+      )}
     </Toolbar>
   </AppBar>
    ) 
