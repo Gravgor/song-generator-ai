@@ -10,6 +10,12 @@ export const parseAILyrics = (response: string) => {
  }
  
 
+ function extractMatch(data: string, fieldName: string) {
+   const regex = new RegExp(`${fieldName}:\\s*([\\s\\S]*?)(?=\\n\\S|Style:|Tone:|Vocal Style:|Accents:|Influences:|$)`, 'i');
+   const match = data.match(regex);
+   return match ? match[1].trim() : null;
+ }
+
 
  export const parseAISongDetails = (response: string) => {
   const parsedData: any = {};
@@ -17,15 +23,25 @@ export const parseAILyrics = (response: string) => {
 
   const cleandata = response.replace(/'/g, '');
    
- const styleMatch = cleandata.match(/Style:\s*([\s\S]*?)(?=\n\S|Tone:|Vocal Style:|Accents:|$)/);
- const toneMatch = cleandata.match(/Tone:\s*([\s\S]*?)(?=\n\S|Style:|Vocal Style:|Accents:|$)/);
- const vocalStyleMatch = cleandata.match(/Vocal style:\s*([\s\S]*?)(?=\n\S|Style:|Tone:|Accents:|$)/);
- const accentsMatch = cleandata.match(/Accents:\s*([\s\S]*?)(?=\n\S|Style:|Tone:|Vocal Style:|$)/);
+  const styleMatch = extractMatch(cleandata, 'Style');
+  const toneMatch = extractMatch(cleandata, 'Tone');
+  const influencesMatch = extractMatch(cleandata, 'Influences');
+  const vocalStyleMatch = extractMatch(cleandata, 'Vocal style');
 
- parsedData.style = styleMatch ? styleMatch[1].trim() : '**';
- parsedData.tone = toneMatch ? toneMatch[1].trim() : '**';
- parsedData.vocalStyle = vocalStyleMatch ? vocalStyleMatch[1].trim() : '**';
- parsedData.accents = accentsMatch ? accentsMatch[1].trim() : '**';
+
+   if (styleMatch) {
+      parsedData.style = styleMatch;
+   }
+   if (toneMatch) {
+      parsedData.tone = toneMatch;
+   }
+   if (influencesMatch) {
+      parsedData.influences = influencesMatch;
+   }
+   if (vocalStyleMatch) {
+      parsedData.vocalStyle = vocalStyleMatch;
+   }
+
  
    return parsedData;
 }

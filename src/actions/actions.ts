@@ -12,7 +12,7 @@ export default async function generateSongDetails(songIdea: string): Promise<AIS
             model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: "You are a songwriting assistant tasked with generating comprehensive song details based on the user's idea. Provide a proposed style, influences, tone, vocal style, and accents for the song. Your answer should have only Style, Infulences, Tone, Vocal style, Accents - nothing more." },
-                { role: "user", content: `Based on the following song idea, generate a proposed style, influences, tone, vocal style, and accents: ${songIdea}` },
+                { role: "user", content: `Based the following song idea, recommend musical influences or artists that would inspire the style and composition of this track. Keep it concise like {Artist 1}, {Artist 2}, {Artist 3}: ${songIdea}, Based on the following idea and influences, suggest the most fitting musical genre (or genre mix that would best convey the essence of the song. Keep it concise like {Genre 1} ({Genre 2} fusion, if necessary), Based on the following idea, the genre and influences, what should the emotional tone of the song be to best reflect the theme? Should it be upbeat, reflective, romantic, etc.? Keep it concise like {Tone 1}, {Tone 2}, Considering the following idea, genre, influences, and tone, what vocal style would be most appropriate for this song? Should it be soulful, energetic, soft, etc.? Male/Female? Include vocal accent also, Should it be British, American, Indian, etc.? Keep it concise like: {Tone} {Gender} with a {Accent} accent. ` },
             ],
         });
 
@@ -44,7 +44,7 @@ export async function generateLyrics(songIdea: string,
   style?: string,
   tone?: string,
   vocalStyle?: string,
-  accents?: string,
+  influences?: string,
 ): Promise<AISuggestions> {
   try {
     
@@ -52,8 +52,8 @@ export async function generateLyrics(songIdea: string,
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You are a songwriting assistant tasked with generating lyrics based on the user's song idea and song details. Provide a full lyrics for this song." },
-        { role: "user", content: `Based on the following song idea and details, generate a lyrics: ${songIdea}` },
-        { role: "assistant", content: `Style: ${style}\n\nTone: ${tone}\n\nVocal Style: ${vocalStyle}\n\nAccents: ${accents}` },
+        { role: "user", content: `Based on the following idea and style factors, generate full-length 2000-character-long song lyrics that seamlessly integrate these elements. The lyrics should be fluid and cohesive, without any verse titles or text formatting. Ensure the tone, vocal style, and overall vibe are consistent throughout, reflecting the specified genre, influences, and accent: ${songIdea}` },
+        { role: "assistant", content: `Style: ${style}\n\nTone: ${tone}\n\nVocal Style: ${vocalStyle}\n\nInfluences: ${influences}` },
       ],
     });
     return {
@@ -84,7 +84,7 @@ export async function generateLyrics(songIdea: string,
         "input": {
           "prompt": data.lyrics,
           "title": "Rise From the Ashes",
-          "tags": `Style: ${data.style}, Tone: ${data.tone}, Vocal Style: ${data.vocalStyle}, Accents: ${data.accents}`,
+          "tags": `Style: ${data.style}, Tone: ${data.tone}, Vocal Style: ${data.vocalStyle}, Influences: ${data.influences}`,
           "continue_at": 0,
           "continue_clip_id": "" 
         }

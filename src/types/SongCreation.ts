@@ -5,7 +5,7 @@ interface SongCreationFormValues {
     style: string;
     tone: string;
     vocalStyle: string;
-    accents: string;
+    influences: string;
   }
   
   interface AISuggestions {

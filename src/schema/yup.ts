@@ -1,7 +1,7 @@
 import * as yup from "yup";
 
 export const SongGenerationSchema = yup.object().shape({
-    accents: yup.string().required("Accents are required"),
+  influences: yup.string().required("influences are required"),
     tone: yup.string().required("Tone is required"),
     vocalStyle: yup.string().required("Vocal style is required"),
     songTitle: yup.string().required("Song title is required"),
