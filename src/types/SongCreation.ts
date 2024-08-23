@@ -3,6 +3,9 @@ interface SongCreationFormValues {
     songIdea: string;
     lyrics: string;
     style: string;
+    tone: string;
+    vocalStyle: string;
+    accents: string;
   }
   
   interface AISuggestions {

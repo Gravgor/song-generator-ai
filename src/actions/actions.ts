@@ -1,6 +1,9 @@
 'use server'
 
+import { User } from "@/types/User";
+import bcrypt from "bcrypt";
 import OpenAI from "openai";
+import {prisma} from "@/lib/prisma";
 const openai = new OpenAI();
 
 export default async function generateSongDetails(songIdea: string): Promise<AISuggestions> {
@@ -135,3 +138,73 @@ I’m unstoppable, reaching high`),
     };
     }
   }
+
+
+
+
+  export async function handlePaymentAndSongGeneration(data : SongCreationFormValues) {
+    const apiKey = process.env.GOAPI_API_KEY;
+    console.log(apiKey)
+    /*const request = await fetch(`${process.env.GOAPI_URL}`,{
+      method: "POST",
+      body: JSON.stringify({
+        "custom_mode": true,
+        "input": {
+          "prompt": data.lyrics,
+          "title": "Rise From the Ashes",
+          "tags": data.style,
+          "continue_at": 0,
+          "continue_clip_id": "" 
+        }
+      }),
+      headers: {
+        "X-API-Key": `${apiKey}`,
+        "Content-Type": "application/json"
+      }
+    })
+    const response = await request.json()
+    const taskID = "7f38a240-64b5-4c52-884a-67185b78af47"
+    const taskRequest = await fetch(`${process.env.GOAPI_URL}/${taskID}`,{
+      headers: {
+        "X-API-Key": `${apiKey}`,
+        "Content-Type": "application/json"
+      }
+    })
+    const taskResponse = await taskRequest.json()*/
+    const taskResponse = {
+      clips: {
+        "url": "https://cdn1.suno.ai/a4cde422-810a-4835-9464-8c05034bc6a4.mp3"
+      }
+    }
+    console.log(taskResponse)
+    return taskResponse
+}
+
+
+export async function authenticate(email: string, password: string): Promise<User | null> {
+    const user = await prisma?.user.findUnique({
+        where: {
+            email,
+        },
+    });
+    if(!user) {
+        throw new Error("User not found");
+    }
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
+        throw new Error("Invalid password");
+    }
+    return user as unknown as User;
+}
+
+export async function createUser(email: string, username: string, password: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma?.user.create({
+        data: {
+            email,
+            username,
+            password: hashedPassword,
+        },
+    });
+    return user as unknown as User;
+}

@@ -10,7 +10,8 @@ import { colors } from '@/style/style';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { generateLyrics } from '@/actions/actions';
+import generateSongDetails, { generateLyrics, handlePaymentAndSongGeneration } from '@/actions/actions';
+import { Session } from 'next-auth';
 
 const SongIdeaCard = styled(Card)({
   backgroundColor: '#fff',
@@ -60,7 +61,7 @@ export const SongCreationLoading = () => (
   </AIResponseCard>
 );
 
-export default function SongCreationForm() {
+export default function SongCreationForm({session} : any) {
   const [initialResponse, setInitialResponse] = useState<any>(null);
   const [finalLyrics, setFinalLyrics] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -80,7 +81,6 @@ export default function SongCreationForm() {
     resolver: yupResolver(SongGenerationSchema),
   });
 
-  // Handle initial submission to get style, tone, vocal style, and accents
   const onSubmitInitial: SubmitHandler<any> = async (data) => {
     setLoading(true);
     const request = await generateSongDetails(data.songIdea);
@@ -110,14 +110,6 @@ export default function SongCreationForm() {
     }
   }, []);
 
-  const handlePaymentAndGenerateSong = () => {
-    const isAuthenticated = false; // Replace with actual authentication check
-    if (isAuthenticated) {
-      onSubmitFinal(getValues());
-    } else {
-      setOpenLoginDialog(true);
-    }
-  };
 
   const handleCloseLoginDialog = () => {
     setOpenLoginDialog(false);
@@ -126,6 +118,16 @@ export default function SongCreationForm() {
   const handleLogin = () => {
     console.log("Redirecting to login page...");
   };
+
+  const handlePaymentAndGeneration = async () => {
+    if(session !== null) {
+      console.log("Payment successful, generating song...");
+      const response = await handlePaymentAndSongGeneration(getValues());
+      console.log(response);
+    } else {
+      setOpenLoginDialog(true);
+    }
+  }
 
   
   return (
@@ -293,11 +295,11 @@ export default function SongCreationForm() {
                     value={initialResponse?.accents || ''}
                   />
                 )}
-              />
+              /> 
               <StyledButton
                 type="button"
                 variant="contained"
-                onClick={handlePaymentAndGenerateSong}
+                onClick={handlePaymentAndGeneration}
               >
                 Generate Song
               </StyledButton>

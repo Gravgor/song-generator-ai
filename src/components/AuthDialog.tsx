@@ -3,6 +3,8 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, TextFiel
 import { styled } from '@mui/system';
 import { useAuth } from '@/hooks/useAuth';
 import { colors } from '@/style/style';
+import { createUser } from '@/actions/actions';
+import { signIn } from 'next-auth/react';
 
 
 const StyledButton = styled(Button)({
@@ -27,11 +29,14 @@ const AuthDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) =
   };
 
   const handleLogin = () => {
-    login(email, password);
+    signIn('credentials', { email, password });
   };
 
-  const handleRegister = () => {
-    register(email, username, password);
+  const handleRegister = async () => {
+    const newUser = await createUser(email, username, password);
+    if (newUser) {
+      signIn('credentials', { email, password });
+    }
   };
 
   return (
