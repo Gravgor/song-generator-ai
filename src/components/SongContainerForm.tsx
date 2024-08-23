@@ -276,7 +276,7 @@ export default function SongCreationForm({ session }: any) {
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <StyledButton
                   variant="outlined"
-                  disabled={step === 0}
+                  disabled={Number(step) === 0}
                   onClick={handleBack}
                   sx={{ marginRight: '1rem' }}
                 >
@@ -292,7 +292,7 @@ export default function SongCreationForm({ session }: any) {
                 <StyledButton
                   variant="contained"
                   onClick={handleNext}
-                  disabled={step === 2 || loading}
+                  disabled={step >= 2 || loading}
                   sx={{ marginLeft: '1rem' }}
                 >
                   Next
@@ -415,7 +415,7 @@ export default function SongCreationForm({ session }: any) {
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <StyledButton
                   variant="outlined"
-                  disabled={step === 0}
+                  disabled={Number(step) !== 0}
                   onClick={handleBack}
                   sx={{ marginRight: '1rem' }}
                 >
