@@ -87,10 +87,10 @@ export default function SongCreationForm({ session }: any) {
       getValues("influences"),
     );
     const parseLyrics = parseAILyrics(request.content);
-    const title = parseLyrics.title.replace("title:", "").trim();
-    setFinalTitle(title);
+    console.log(parseLyrics);
+    setFinalTitle(parseLyrics.title);
     setFinalLyrics(parseLyrics.lyrics);
-    setValue("songTitle", title);
+    setValue("songTitle", parseLyrics.title);
     setValue("lyrics", parseLyrics.lyrics);
     setLoading(false);
     setStep(2); 
