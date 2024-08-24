@@ -40,7 +40,8 @@ const PricingInfo = styled(Box)({
 
 export default function SongCreationForm({ session }: any) {
   const [initialResponse, setInitialResponse] = useState<any>(null);
-  const [finalLyrics, setFinalLyrics] = useState<any>(null);
+  const [finalLyrics, setFinalLyrics] = useState<string>("");
+  const [finalTitle, setFinalTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isAIResponseReceived, setIsAIResponseReceived] = useState<boolean>(false);
   const [openLoginDialog, setOpenLoginDialog] = useState<boolean>(false);
@@ -86,15 +87,26 @@ export default function SongCreationForm({ session }: any) {
       getValues("influences"),
     );
     const parseLyrics = parseAILyrics(request.content);
-    setFinalLyrics(parseLyrics);
+    const title = parseLyrics.title.replace("title:", "").trim();
+    setFinalTitle(title);
+    setFinalLyrics(parseLyrics.lyrics);
+    setValue("songTitle", title);
+    setValue("lyrics", parseLyrics.lyrics);
     setLoading(false);
-    setStep(2); // Move to the final step
-    setGenerationCount(2); // Increment generation count after final lyrics
+    setStep(2); 
+    setGenerationCount(2); 
   };
 
   useEffect(() => {
     if (searchParams.has("idea")) {
-      setValue("songIdea", searchParams.get("idea") || "");
+      if (searchParams.get("idea") === "") {
+        setStep(0);
+        console.log("No song idea provided");
+      } else {
+        console.log("Song idea provided:", searchParams.get("idea"));
+        setValue("songIdea", searchParams.get("idea") || "");
+        onSubmitInitial(getValues());
+      }
     }
   }, []);
 
@@ -203,9 +215,6 @@ export default function SongCreationForm({ session }: any) {
                 </StyledButton>
                 <Box sx={{ marginLeft: '1rem' }}>
                   {loading && <Skeleton variant="rectangular" width={200} height={40} />}
-                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                    {isAIResponseReceived ? "AI Suggestions Generated!" : ""}
-                  </Typography>
                 </Box>
               </Box>
             </SongIdeaCard>
@@ -240,7 +249,6 @@ export default function SongCreationForm({ session }: any) {
                       marginBottom: '1rem',
                       fontFamily: 'Poppins, Nunito, sans-serif',
                     }}
-                    value={initialResponse?.style || ''}
                   />
                 )}
               />
@@ -260,7 +268,6 @@ export default function SongCreationForm({ session }: any) {
                       marginBottom: '1rem',
                       fontFamily: 'Poppins, Nunito, sans-serif',
                     }}
-                    value={initialResponse?.tone || ''}
                   />
                 )}
               />
@@ -280,7 +287,6 @@ export default function SongCreationForm({ session }: any) {
                       marginBottom: '1rem',
                       fontFamily: 'Poppins, Nunito, sans-serif',
                     }}
-                    value={initialResponse?.vocalStyle || ''}
                   />
                 )}
               />
@@ -291,7 +297,7 @@ export default function SongCreationForm({ session }: any) {
                   <TextField
                     fullWidth
                     variant="outlined"
-                    label="Accents"
+                    label="Influences"
                     {...field}
                     error={!!fieldState.error}
                     helperText={fieldState.error ? fieldState.error.message : ""}
@@ -300,7 +306,6 @@ export default function SongCreationForm({ session }: any) {
                       marginBottom: '1rem',
                       fontFamily: 'Poppins, Nunito, sans-serif',
                     }}
-                    value={initialResponse?.influences.replace(/{|}/g, '') || ''}
                   />
                 )}
               />
@@ -320,14 +325,6 @@ export default function SongCreationForm({ session }: any) {
                 >
                   Generate Final Lyrics
                 </StyledButton>
-                <StyledButton
-                  variant="contained"
-                  onClick={handleNext}
-                  disabled={step >= 2 || loading}
-                  sx={{ marginLeft: '1rem' }}
-                >
-                  Next
-                </StyledButton>
               </Box>
             </AIResponseCard>
           )}
@@ -340,11 +337,30 @@ export default function SongCreationForm({ session }: any) {
           ) : (
             <AIResponseCard>
               <Typography variant="h5" gutterBottom>
-                Step 3: Final Lyrics Of Your Song &quot;<span className='font-bold'>{finalLyrics?.title}</span>&quot;
+                Step 3: Final Lyrics Of Your Song &quot;<span className='font-bold'>{finalTitle}</span>&quot;
               </Typography>
               <FormHelperText sx={{ marginBottom: '1rem' }}>
                 Here are your final song details and lyrics. Click `&quot;`Generate Song`&quot;` to get the final song.
               </FormHelperText>
+              <Controller
+                name="songTitle"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Song Title"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                    sx={{
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, Nunito, sans-serif',
+                      whiteSpace: 'pre-line',
+                    }}
+                  />
+                )}
+              />
               <Controller
                 name="lyrics"
                 control={control}
@@ -363,83 +379,6 @@ export default function SongCreationForm({ session }: any) {
                       fontFamily: 'Poppins, Nunito, sans-serif',
                       whiteSpace: 'pre-line',
                     }}
-                    value={finalLyrics?.lyrics || ''}
-                  />
-                )}
-              />
-              <Controller
-                name="style"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    label="Style"
-                    {...field}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error ? fieldState.error.message : ""}
-                    sx={{
-                      marginBottom: '1rem',
-                      fontFamily: 'Poppins, Nunito, sans-serif',
-                    }}
-                    value={initialResponse?.style || ''}
-                  />
-                )}
-              />
-              <Controller
-                name="tone"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    label="Tone"
-                    {...field}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error ? fieldState.error.message : ""}
-                    sx={{
-                      marginBottom: '1rem',
-                      fontFamily: 'Poppins, Nunito, sans-serif',
-                    }}
-                    value={initialResponse?.tone || ''}
-                  />
-                )}
-              />
-              <Controller
-                name="vocalStyle"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    label="Vocal Style"
-                    {...field}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error ? fieldState.error.message : ""}
-                    sx={{
-                      marginBottom: '1rem',
-                      fontFamily: 'Poppins, Nunito, sans-serif',
-                    }}
-                    value={initialResponse?.vocalStyle || ''}
-                  />
-                )}
-              />
-              <Controller
-                name="influences"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    label="Accents"
-                    {...field}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error ? fieldState.error.message : ""}
-                    sx={{
-                      marginBottom: '1rem',
-                      fontFamily: 'Poppins, Nunito, sans-serif',
-                    }}
-                    value={initialResponse?.influences.replace(/{|}/g, '') || ''}
                   />
                 )}
               />

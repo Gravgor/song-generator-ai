@@ -8,7 +8,7 @@ import { loadStripe } from "@stripe/stripe-js";
 const openai = new OpenAI();
 
 export default async function generateSongDetails(songIdea: string): Promise<AISuggestions> {
-    /*try {
+    try {
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
@@ -31,7 +31,7 @@ export default async function generateSongDetails(songIdea: string): Promise<AIS
             content: "Error generating song details",
             refusal: null,
         };
-    }*/
+    }
    const mockData = {
     "role": "assistant",
     "content": "Style: Power Ballad/Pop Rock\n\nInfluences: The song takes inspiration from the empowering music of artists such as Journey, Bruce Springsteen, Queen, Rachel Platten, and Sia.\n\nTone: The song will carry an empowering and motivational tone, touching on themes of perseverance, overcoming adversity, and personal growth. The verses will have a darker tone to depict the struggle, switching to triumphant and uplifting in the chorus to demonstrate victory and resilience.\n\nVocal Style: The vocals should be robust and dynamic, versatile enough to capture the softer moments of struggle but powerful and fearless when representing triumph. The vocal style would embody characteristics of great rock/pop powerhouses like Freddie Mercury or Kelly Clarkson.\n\nAccents: For the instrumental accents, it would include soaring guitar solos or complementary string sections that emphasize the highs and lows of the protagonist's journey. Piano undertones can also be used to add a layer of depth and introspection. For vocal accents, we'll use belting, emphasizing key words and phrases to underline the protagonist's determination and strength. Adding backing vocals or choir elements during the choruses will reinforce the feeling of triumphant resilience.",
@@ -53,7 +53,7 @@ export async function generateLyrics(songIdea: string,
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You are a songwriting assistant tasked with generating lyrics based on the user's song idea and song details. Provide a full lyrics for this song." },
-        { role: "user", content: `Based on the following idea and style factors, generate full-length 2000-character-long song lyrics that seamlessly integrate these elements. The lyrics should be fluid and cohesive, without any verse titles or text formatting. Ensure the tone, vocal style, and overall vibe are consistent throughout, reflecting the specified genre, influences, and accent: ${songIdea}` },
+        { role: "user", content: `Based on the following idea and style factors, generate full-length 2000-character-long song lyrics and also title of the song that seamlessly integrate these elements. The lyrics should be fluid and cohesive, without any verse, chorus, outro titles or text formatting. Ensure the tone, vocal style, and overall vibe are consistent throughout, reflecting the specified genre, influences, and accent: ${songIdea}` },
         { role: "assistant", content: `Style: ${style}\n\nTone: ${tone}\n\nVocal Style: ${vocalStyle}\n\nInfluences: ${influences}` },
       ],
     });

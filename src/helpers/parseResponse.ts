@@ -1,11 +1,26 @@
 
 
 export const parseAILyrics = (response: string) => {
-   const tagPattern = /\*\*.*?\:\*\*/g;
-   let cleanedLyrics = response.replace(tagPattern, '');
-    cleanedLyrics = cleanedLyrics.replace(/\n\s*\n/g, '\n').trim();
+   const tagPattern = /\*\*(.*?)\*\*/; 
+   const match = response.match(tagPattern);
+ 
+   if (!match) {
+     return {
+       title: '',
+       lyrics: response.trim(),
+     };
+   }
+ 
+   let title = match[1].trim();
+   title = title.replace(/^Title:\s*/, ''); 
+   title = title.replace(/"/g, ''); 
+ 
+   let cleanedLyrics = response.replace(match[0], '').trim();
+   cleanedLyrics = cleanedLyrics.replace(/\n\s*\n/g, '\n').trim();
+ 
    return {
-      lyrics: cleanedLyrics,
+     title: title,
+     lyrics: cleanedLyrics,
    };
  }
  

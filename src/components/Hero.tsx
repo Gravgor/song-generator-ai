@@ -26,9 +26,6 @@ export default function Hero() {
   };
 
   const handleSubmit = () => {
-    // Handle the song idea submission, e.g., navigate to a different page or make an API call
-    console.log("Song Idea Submitted:", songIdea);
-    // Optionally redirect to a song creation page with the idea
     window.location.href = `/create-song?idea=${encodeURIComponent(songIdea)}`;
   };
 
