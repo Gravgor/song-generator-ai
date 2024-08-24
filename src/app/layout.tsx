@@ -25,7 +25,6 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.className}>
-        <SpeedInsights />
         <Navbar email={session?.user.email}/>
         {children}
         </body>
