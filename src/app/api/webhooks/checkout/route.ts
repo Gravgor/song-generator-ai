@@ -1,8 +1,4 @@
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 import Stripe from 'stripe';
 import { NextRequest } from 'next/server';
