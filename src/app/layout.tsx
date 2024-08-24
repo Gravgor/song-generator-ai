@@ -5,6 +5,7 @@ import '@material/web/button/filled-button.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/checkbox/checkbox.js';
 import Navbar from "@/components/Navbar";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { getServerAuthSession } from "@/next-auth/next-auth-options";
 
 
@@ -24,6 +25,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.className}>
+        <SpeedInsights />
         <Navbar email={session?.user.email}/>
         {children}
         </body>
