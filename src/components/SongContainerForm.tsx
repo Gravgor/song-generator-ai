@@ -15,6 +15,7 @@ import { AIResponseCard, SongIdeaCard } from './Cards';
 import { SongCreationLoading } from './SongCreationLoading';
 import { loadStripe } from '@stripe/stripe-js';
 import useLocalStorage from '@/hooks/useLocalStorage';
+import useStripeWebhook from '@/hooks/useStripeWebhook';
 
 const PaymentSection = styled(Box)({
   backgroundColor: '#fff',
@@ -49,8 +50,6 @@ export default function SongCreationForm({ session }: any) {
   const [step, setStep] = useState(0); // Added step state for progress tracking
   const [generationCount, setGenerationCount] = useState(1); // Track the number of generations
   const [isPaymentStarted, setIsPaymentStarted] = useState(false);
-  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
-
   const searchParams = useSearchParams();
   const [savedData, setSavedData] = useLocalStorage('songCreationData', {});
   const { control, handleSubmit, setValue, getValues } = useForm({
@@ -157,8 +156,6 @@ export default function SongCreationForm({ session }: any) {
 
 
   useEffect(() => {
-    setSavedData({});
-
     const clearDatabaseTimer = setTimeout(async () => {
       if (!isPaymentStarted) {
         await  clearProgress();
@@ -170,6 +167,7 @@ export default function SongCreationForm({ session }: any) {
     // Cleanup timer on component unmount
     return () => clearTimeout(clearDatabaseTimer);
   }, [isPaymentStarted]);
+
 
   const handleCloseLoginDialog = () => {
     setOpenLoginDialog(false);
@@ -186,6 +184,7 @@ export default function SongCreationForm({ session }: any) {
         console.error("Stripe not initialized");
         return;
       }
+      setIsPaymentStarted(true);
       try {
         const priceId = generationCount === 1 ? 'price_1Pr3pQHB9eXojLqLP82Jl7T6' : 'price_1Pr3pDHB9eXojLqLsxwhw6ps';
         const response = await fetch("/api/stripe/checkout", {
@@ -202,7 +201,6 @@ export default function SongCreationForm({ session }: any) {
         const result = await stripe.redirectToCheckout({
           sessionId: sessionRequest.result.id,
         })
-        redirectAfterPayment()
       } catch (error) {
         console.error("Error checking out with Stripe:", error)
       }
