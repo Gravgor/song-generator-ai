@@ -9,7 +9,7 @@ import { SongGenerationSchema } from '@/schema/yup';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { checkOutStripe, clearProgress, generateLyrics, getStripePayment, loadProgress, saveSongProgress } from '@/actions/actions';
+import generateSongDetails, { checkOutStripe, clearProgress, generateLyrics, getStripePayment, loadProgress, redirectAfterPayment, saveSongProgress } from '@/actions/actions';
 import { StyledButton } from './Button';
 import { AIResponseCard, SongIdeaCard } from './Cards';
 import { SongCreationLoading } from './SongCreationLoading';
@@ -70,8 +70,7 @@ export default function SongCreationForm({ session }: any) {
   const saveProgress = async (step: number) => {
     const data = getValues();
     const progress = await saveSongProgress({ ...data, step });
-    console.log('Progress saved:', progress);
-    if((progress as any).error) {
+    if (!session) {
       setSavedData({ ...data, step });
     } else {
       console.log('Progress saved in database:', progress);
@@ -203,6 +202,7 @@ export default function SongCreationForm({ session }: any) {
         const result = await stripe.redirectToCheckout({
           sessionId: sessionRequest.result.id,
         })
+        redirectAfterPayment()
       } catch (error) {
         console.error("Error checking out with Stripe:", error)
       }

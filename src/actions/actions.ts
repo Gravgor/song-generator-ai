@@ -220,7 +220,7 @@ export async function saveSongProgress(data: Partial<SongProgress>): Promise<obj
 
   // Check if the session and user exist
   if (!session || !session.user) {
-    return { error: "No session or user found" };
+    return { error: true, message: "No session or user found" };
   }
 
   try {
