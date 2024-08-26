@@ -192,8 +192,22 @@ export async function checkOutStripe(priceId: string) {
     const result = await stripe.redirectToCheckout({
       sessionId: session.result.id,
     })
+   // saveStripePayment(session.result.metadata.userId, priceId)
   } catch (error) {
     console.error("Error checking out with Stripe:", error)
+  }
+}
+
+export async function saveStripePayment(userId: string, priceId: string) {
+  try {
+    await prisma.userPayment.create({
+      data: {
+        userId,
+        paymentId: priceId,
+      },
+    })
+  } catch (error) {
+    console.error("Error saving Stripe payment:", error)
   }
 }
 
@@ -210,20 +224,36 @@ interface SongProgress {
   step: number;
 }
 
-export async function saveSongProgress(data: Partial<SongProgress>): Promise<string> {
+export async function saveSongProgress(data: Partial<SongProgress>): Promise<object> {
   // Get the current user's session
   const session = await getServerAuthSession();
 
   // Check if the session and user exist
   if (!session || !session.user) {
-    throw new Error("No session or user found");
+    return { error: "No session or user found" };
   }
-  console.log(data)
+
   try {
+    // Determine the user ID, fall back to email lookup if ID is undefined
+    let userId = session.user.id ?? '';
+    
+    if (!userId && session.user.email) {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: session.user.email,
+        },
+      });
+      userId = user?.id ?? '';
+    }
+
+    if (!userId) {
+      throw new Error("User ID not found");
+    }
+
     // Check if there is existing progress for this user
     const existingProgress = await prisma.songProgress.findFirst({
       where: {
-        userId: session.user.id,
+        userId: userId,
       },
     });
 
@@ -244,12 +274,12 @@ export async function saveSongProgress(data: Partial<SongProgress>): Promise<str
           step: data.step ?? 0,
         },
       });
-      return "Progress updated successfully";
+      return { message: "Progress updated successfully" };
     } else {
       // If no progress exists, create a new record
       await prisma.songProgress.create({
         data: {
-          userId: session.user.id,
+          userId: userId,
           songTitle: data.songTitle ?? "",
           songIdea: data.songIdea ?? "",
           style: data.style ?? "",
@@ -260,7 +290,7 @@ export async function saveSongProgress(data: Partial<SongProgress>): Promise<str
           step: data.step ?? 0,
         },
       });
-      return "Progress saved successfully";
+      return { message: "Progress saved successfully" };
     }
   } catch (error) {
     console.error("Error saving song progress:", error);
@@ -268,20 +298,34 @@ export async function saveSongProgress(data: Partial<SongProgress>): Promise<str
   }
 }
 
+
 export async function loadProgress() {
-  // Get the current user's session
   const session = await getServerAuthSession();
 
-  // Check if the session and user exist
   if (!session || !session.user) {
     throw new Error("No session or user found");
   }
 
   try {
-    const id = session.user.id;
+    // Determine the user ID, fall back to email lookup if ID is undefined
+    let userId = session.user.id ?? '';
+    
+    if (!userId && session.user.email) {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: session.user.email,
+        },
+      });
+      userId = user?.id ?? '';
+    }
+
+    if (!userId) {
+      throw new Error("User ID not found");
+    }
+
     const existingProgress = await prisma.songProgress.findFirst({
       where: {
-        userId: id,
+        userId: userId,
       },
     });
 
@@ -293,5 +337,42 @@ export async function loadProgress() {
   } catch (error) {
     console.error("Error loading song progress:", error);
     throw new Error("Failed to load song progress");
+  }
+}
+
+
+export async function clearProgress() {
+  const session = await getServerAuthSession();
+
+  if (!session || !session.user) {
+    throw new Error("No session or user found");
+  }
+
+  try {
+    // Determine the user ID, fall back to email lookup if ID is undefined
+    let userId = session.user.id ?? '';
+    
+    if (!userId && session.user.email) {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: session.user.email,
+        },
+      });
+      userId = user?.id ?? '';
+    }
+
+    if (!userId) {
+      throw new Error("User ID not found");
+    }
+
+    await prisma.songProgress.deleteMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return { message: "Progress cleared successfully" };
+  } catch (error) {
+    console.error("Error clearing song progress:", error);
+    throw new Error("Failed to clear song progress");
   }
 }

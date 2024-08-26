@@ -1,62 +1,36 @@
+import { stripe } from "@/utils/stripe/config";
+import Stripe from "stripe";
 
 
-import Stripe from 'stripe';
-import { NextRequest } from 'next/server';
-import { headers } from 'next/headers';
-type METADATA = {
-  userId: string;
-  priceId: string;
-};
-import { buffer } from "micro"
-const stripe = new Stripe(process.env.PROD_STRIPE_SECRET_KEY!);
+const relevantEvents = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+  "checkout.session.completed",
+  "checkout.session.async_payment_intent_succeeded",
+  "checkout.session.async_payment_intent_failed",
+  "checkout.session.async_payment_intent_succeeded",
+  "checkout.session.async_payment_intent_failed",
+])
 
-export async function POST(req: any) {
-  if(req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
-  }
-    const body = await buffer(req);
-    const endpointSecret = process.env.PROD_STRIPE_SECRET_WEBHOOK_KEY!;
-    const sig = req.headers.get('stripe-signature') as string;
-    let event: Stripe.Event;
-    try {
-        event = stripe.webhooks.constructEvent(body.toString(), sig, endpointSecret);
-    } catch (err) {
-        console.error(err);
-        return new Response('Webhook Error', { status: 400 });
-    }
-    const eventType = event.type;
-  if (
-    eventType !== 'checkout.session.completed' &&
-    eventType !== 'checkout.session.async_payment_succeeded'
-  )
-    return new Response('Server Error', {
-      status: 500
-    });
-    const data = event.data.object;
-  const metadata = data.metadata as METADATA;
-  const userId = metadata.userId;
-  const priceId = metadata.priceId;
-  const created = data.created;
-  const currency = data.currency;
-  const customerDetails = data.customer_details;
-  const amount = data.amount_total;
-  const transactionDetails = {
-    userId,
-    priceId,
-    created,
-    currency,
-    customerDetails,
-    amount,
-  };
+export async function POST(req: Request) {
+  const body = await req.text();
+  const sig = req.headers.get('stripe-signature') as string;
+  const webhookSecret = process.env.TEST_STRIPE_SECRET_WEBHOOK_KEY;
+  let event: Stripe.Event;
+
   try {
-    // Handle the checkout.session.completed event
-    // Fulfill the purchase...
-    // Send a confirmation email...
-    // You can write your own custom logic here
-    console.log('Payment succeeded:', transactionDetails);
-    return new Response('Webhook Received: Success', { status: 200 });
-  } catch (err) {
-    console.error(err);
-    return new Response('Webhook Error', { status: 400 });
+    if (!sig || !webhookSecret)
+      return new Response('Webhook secret not found.', { status: 400 });
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    console.log(`🔔  Webhook received: ${event.type}`);
+  } catch (err: any) {
+    console.log(`❌ Error message: ${err.message}`);
+    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
+
+  if(relevantEvents.has(event.type)) {
+    console.log("Received event", event.id);
+  }
+  return new Response('Webhook received', { status: 200 });
 }

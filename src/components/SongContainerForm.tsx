@@ -9,11 +9,12 @@ import { SongGenerationSchema } from '@/schema/yup';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { checkOutStripe, generateLyrics, loadProgress, saveSongProgress } from '@/actions/actions';
+import generateSongDetails, { checkOutStripe, clearProgress, generateLyrics, loadProgress, saveSongProgress } from '@/actions/actions';
 import { StyledButton } from './Button';
 import { AIResponseCard, SongIdeaCard } from './Cards';
 import { SongCreationLoading } from './SongCreationLoading';
 import { loadStripe } from '@stripe/stripe-js';
+import useLocalStorage from '@/hooks/useLocalStorage';
 
 const PaymentSection = styled(Box)({
   backgroundColor: '#fff',
@@ -47,8 +48,10 @@ export default function SongCreationForm({ session }: any) {
   const [openLoginDialog, setOpenLoginDialog] = useState<boolean>(false);
   const [step, setStep] = useState(0); // Added step state for progress tracking
   const [generationCount, setGenerationCount] = useState(1); // Track the number of generations
+  const [isPaymentStarted, setIsPaymentStarted] = useState(false);
 
   const searchParams = useSearchParams();
+  const [savedData, setSavedData] = useLocalStorage('songCreationData', {});
   const { control, handleSubmit, setValue, getValues } = useForm({
     defaultValues: {
       songTitle: "",
@@ -65,7 +68,13 @@ export default function SongCreationForm({ session }: any) {
 
   const saveProgress = async (step: number) => {
     const data = getValues();
-    await saveSongProgress({ ...data, step });
+    const progress = await saveSongProgress({ ...data, step });
+    console.log('Progress saved:', progress);
+    if((progress as any).error) {
+      setSavedData({ ...data, step });
+    } else {
+      console.log('Progress saved in database:', progress);
+    }
   }
 
   const onSubmitInitial: SubmitHandler<any> = async (data) => {
@@ -117,7 +126,23 @@ export default function SongCreationForm({ session }: any) {
         setStep(progress.step || 0);
       }
     }
-    getProgress();
+    function getProgressLocal() {
+      const data = savedData;
+      if (data) {
+        setValue("songIdea", data.songIdea || "");
+        setValue("style", data.style || "");
+        setValue("tone", data.tone || "");
+        setValue("vocalStyle", data.vocalStyle || "");
+        setValue("influences", data.influences || "");
+        setValue("lyrics", data.lyrics || "");
+        setStep(data.step || 0);
+    }
+  }
+    if (session) {
+      getProgress();
+    } else {
+      getProgressLocal();
+    }
     if (searchParams.has("idea")) {
       if (searchParams.get("idea") === "") {
         setStep(0);
@@ -129,6 +154,22 @@ export default function SongCreationForm({ session }: any) {
       }
     }
   }, []);
+
+
+  useEffect(() => {
+    setSavedData({});
+
+    const clearDatabaseTimer = setTimeout(async () => {
+      if (!isPaymentStarted) {
+        await  clearProgress();
+        setSavedData({});
+        console.log('Cleared song progress from database and local storage after 5 minutes.');
+      }
+    }, 300000); // 5 minutes in milliseconds
+
+    // Cleanup timer on component unmount
+    return () => clearTimeout(clearDatabaseTimer);
+  }, [isPaymentStarted]);
 
   const handleCloseLoginDialog = () => {
     setOpenLoginDialog(false);
@@ -161,6 +202,7 @@ export default function SongCreationForm({ session }: any) {
         const result = await stripe.redirectToCheckout({
           sessionId: session.result.id,
         })
+        
       } catch (error) {
         console.error("Error checking out with Stripe:", error)
       }

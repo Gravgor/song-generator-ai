@@ -31,7 +31,10 @@ model User {
 model UserPayment {
   id        String   @id @default(cuid())
   userId    String
-  paymentId String
+  priceId   String
+  currency  String
+  customerDetails String
+  amount    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   User      User     @relation(fields: [userId], references: [id])
@@ -62,6 +65,7 @@ model SongProgress {
   influences String?  @db.LongText
   lyrics     String?  @db.LongText
   step       Int
+  userPaymentStarted Boolean @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
