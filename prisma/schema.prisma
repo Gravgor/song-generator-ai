@@ -31,9 +31,11 @@ model User {
 model UserPayment {
   id        String   @id @default(cuid())
   userId    String
-  priceId   String
   currency  String
-  customerDetails String
+  paymentIntent String @db.LongText
+  userCountry String
+  userEmail  String
+  userName   String
   amount    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
