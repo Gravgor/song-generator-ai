@@ -477,7 +477,7 @@ export default function SongCreationForm({ session }: any) {
                   variant="contained"
                   onClick={isPaymentCompleted ? handleSongGeneration : handlePayment}
                 >
-                  Generate Song
+                  {isPaymentCompleted ? "Generate Song" : "Proceed to Payment"}
                 </StyledButton>
               </Box>
             </AIResponseCard>
