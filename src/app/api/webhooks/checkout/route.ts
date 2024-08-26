@@ -14,24 +14,14 @@ export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature") as string;
   const webhookSecret = process.env.TEST_STRIPE_SECRET_WEBHOOK_KEY;
-  const serverSession = await getServerAuthSession();
-  const userEmail = serverSession?.user?.email;
-  let event: Stripe.Event;
 
-  const findUser = await prisma.user.findUnique({
-    where: {
-      email: userEmail ?? "",
-    },
-  });
-  const userIdDatabase = findUser?.id
+  let event: Stripe.Event;
 
   try {
     if (!sig || !webhookSecret)
       return new Response("Webhook secret not found.", { status: 400 });
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-    console.log(`🔔  Webhook received: ${event.type}`);
   } catch (err: any) {
-    console.log(`❌ Error message: ${err.message}`);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
@@ -45,6 +35,12 @@ export async function POST(req: Request) {
             : null;
 
         if (paymentIntent) {
+          const findUser = await prisma.user.findUnique({
+            where: {
+              email: session.customer_details?.email ?? "",
+            },
+          });
+          const userIdDatabase = findUser?.id
           await prisma.userPayment.create({
             data: {
               userId: userIdDatabase ?? "",
