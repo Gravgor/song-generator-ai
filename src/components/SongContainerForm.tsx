@@ -9,7 +9,7 @@ import { SongGenerationSchema } from '@/schema/yup';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { checkOutStripe, clearProgress, generateLyrics, loadProgress, saveSongProgress } from '@/actions/actions';
+import generateSongDetails, { checkOutStripe, clearProgress, generateLyrics, getStripePayment, loadProgress, saveSongProgress } from '@/actions/actions';
 import { StyledButton } from './Button';
 import { AIResponseCard, SongIdeaCard } from './Cards';
 import { SongCreationLoading } from './SongCreationLoading';
@@ -49,6 +49,7 @@ export default function SongCreationForm({ session }: any) {
   const [step, setStep] = useState(0); // Added step state for progress tracking
   const [generationCount, setGenerationCount] = useState(1); // Track the number of generations
   const [isPaymentStarted, setIsPaymentStarted] = useState(false);
+  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
 
   const searchParams = useSearchParams();
   const [savedData, setSavedData] = useLocalStorage('songCreationData', {});
@@ -179,7 +180,7 @@ export default function SongCreationForm({ session }: any) {
     console.log("Redirecting to login page...");
   };
 
-  const handlePaymentAndGeneration = async () => {
+  const handlePayment = async () => {
     if (session !== null) {
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
       if(!stripe) {
@@ -195,14 +196,19 @@ export default function SongCreationForm({ session }: any) {
             "Content-Type": "application/json",
           },
         })
-        const session = await response.json()
-        if(!session) {
+        const sessionRequest = await response.json()
+        if(!sessionRequest) {
           throw new Error("No session returned")
         }
         const result = await stripe.redirectToCheckout({
-          sessionId: session.result.id,
+          sessionId: sessionRequest.result.id,
         })
-        
+        const paymentSucess = await getStripePayment(session);
+        if(paymentSucess.success === true) {
+          setIsPaymentCompleted(true);
+          setIsPaymentStarted(true);
+          console.log("Payment successful");
+        }
       } catch (error) {
         console.error("Error checking out with Stripe:", error)
       }
@@ -210,6 +216,10 @@ export default function SongCreationForm({ session }: any) {
       setOpenLoginDialog(true);
     }
   };
+
+  const handleSongGeneration = async () => {
+    console.log("Generating song...");
+  }
 
   const handleNext = () => {
     if (step < 2) setStep(step + 1); // Move to the next step
@@ -465,7 +475,7 @@ export default function SongCreationForm({ session }: any) {
                 <StyledButton
                   type="button"
                   variant="contained"
-                  onClick={handlePaymentAndGeneration}
+                  onClick={isPaymentCompleted ? handleSongGeneration : handlePayment}
                 >
                   Generate Song
                 </StyledButton>

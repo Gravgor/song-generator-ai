@@ -364,3 +364,14 @@ export async function clearProgress() {
     throw new Error("Failed to clear song progress");
   }
 }
+
+export async function getStripePayment(userId: string) {
+  const payments = await prisma.userPayment.findMany({
+    where: {
+      userId,
+    },
+  });
+  return {
+    success: true,
+  };
+}
