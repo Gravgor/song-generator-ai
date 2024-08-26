@@ -40,6 +40,14 @@ const AuthDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) =
     }
   };
 
+  const handleLoginGoogle = () => {
+    try {
+      signIn('google', { callbackUrl: `http://localhost:3000/${pathname}` });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const handleRegister = async () => {
     const newUser = await createUser(email, username, password);
     if (newUser) {
@@ -77,7 +85,7 @@ const AuthDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) =
             <StyledButton fullWidth variant="contained" onClick={handleLogin} sx={{ mt: 2 }}>
                 Login
             </StyledButton>
-            <StyledButton fullWidth variant="contained" sx={{ mt: 2 }}>
+            <StyledButton fullWidth variant="contained" onClick={handleLoginGoogle} sx={{ mt: 2 }}>
               Login with Google
             </StyledButton>
           </div>

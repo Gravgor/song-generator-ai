@@ -1,7 +1,9 @@
-import { authenticate } from "@/actions/actions";
+import { authenticate, createGoogleUser, createUser, getUserByEmail } from "@/actions/actions";
 import { User } from "@/types/User";
 import { getServerSession, type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+
 
 
 export const authOptions: NextAuthOptions = {
@@ -19,6 +21,25 @@ export const authOptions: NextAuthOptions = {
           session.user.id = token.userId;
           return session;
         },
+        async signIn({account, user}) {
+          if (account && account.type === "credentials") {
+            return true;
+          }
+          if (account && account.provider === "google") {
+            const email = user.email || "";
+            const name = user.name || "";
+            const findUser = await getUserByEmail(email);
+            if (findUser) {
+              return true;
+            }
+           const userCreate = await createGoogleUser(email, name);
+            if (!userCreate) {
+              return false;
+            }
+            return true;
+          }
+          return true;
+        }
       },
       pages: {
         signIn: "/auth/signin",
@@ -46,6 +67,10 @@ export const authOptions: NextAuthOptions = {
             }
             return null;
           },
+        }),
+        GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID!,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         }),
       ]
     };

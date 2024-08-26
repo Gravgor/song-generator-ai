@@ -9,7 +9,7 @@ import { SongGenerationSchema } from '@/schema/yup';
 import AuthDialog from './AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { checkOutStripe, generateLyrics } from '@/actions/actions';
+import generateSongDetails, { checkOutStripe, generateLyrics, loadProgress, saveSongProgress } from '@/actions/actions';
 import { StyledButton } from './Button';
 import { AIResponseCard, SongIdeaCard } from './Cards';
 import { SongCreationLoading } from './SongCreationLoading';
@@ -62,6 +62,12 @@ export default function SongCreationForm({ session }: any) {
     resolver: yupResolver(SongGenerationSchema),
   });
 
+
+  const saveProgress = async (step: number) => {
+    const data = getValues();
+    await saveSongProgress({ ...data, step });
+  }
+
   const onSubmitInitial: SubmitHandler<any> = async (data) => {
     setLoading(true);
     const request = await generateSongDetails(data.songIdea);
@@ -74,7 +80,8 @@ export default function SongCreationForm({ session }: any) {
     setIsAIResponseReceived(true);
     setLoading(false);
     setStep(1); // Move to the next step
-    setGenerationCount(1); // Reset generation count for new session
+    setGenerationCount(1);
+    saveProgress(1);
   };
 
   const onSubmitFinal: SubmitHandler<any> = async (data) => {
@@ -87,7 +94,6 @@ export default function SongCreationForm({ session }: any) {
       getValues("influences"),
     );
     const parseLyrics = parseAILyrics(request.content);
-    console.log(parseLyrics);
     setFinalTitle(parseLyrics.title);
     setFinalLyrics(parseLyrics.lyrics);
     setValue("songTitle", parseLyrics.title);
@@ -95,9 +101,23 @@ export default function SongCreationForm({ session }: any) {
     setLoading(false);
     setStep(2); 
     setGenerationCount(2); 
+    saveProgress(2);
   };
 
-  useEffect(() => {
+   useEffect(() => {
+    async function getProgress() {
+      const progress = await loadProgress();
+      if (progress) {
+        setValue("songIdea", progress.songIdea || "");
+        setValue("style", progress.style || "");
+        setValue("tone", progress.tone || "");
+        setValue("vocalStyle", progress.vocalStyle || "");
+        setValue("influences", progress.influences || "");
+        setValue("lyrics", progress.lyrics || "");
+        setStep(progress.step || 0);
+      }
+    }
+    getProgress();
     if (searchParams.has("idea")) {
       if (searchParams.get("idea") === "") {
         setStep(0);
@@ -126,7 +146,7 @@ export default function SongCreationForm({ session }: any) {
         return;
       }
       try {
-        const priceId = generationCount === 1 ? 'price_1Pr3pQHB9eXojLqLP82Jl7T6' : 'price_1Pr3pQHB9eXojLqLP82Jl7T7';
+        const priceId = generationCount === 1 ? 'price_1Pr3pQHB9eXojLqLP82Jl7T6' : 'price_1Pr3pDHB9eXojLqLsxwhw6ps';
         const response = await fetch("/api/stripe/checkout", {
           method: "POST",
           body: JSON.stringify({ priceId }),

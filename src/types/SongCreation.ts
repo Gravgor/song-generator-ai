@@ -1,4 +1,4 @@
-interface SongCreationFormValues {
+export interface SongCreationFormValues {
     songTitle: string;
     songIdea: string;
     lyrics: string;
@@ -8,7 +8,7 @@ interface SongCreationFormValues {
     influences: string;
   }
   
-  interface AISuggestions {
+  export interface AISuggestions {
     role: string;
     content: string;
     refusal: null;
