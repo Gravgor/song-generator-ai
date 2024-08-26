@@ -2,6 +2,8 @@ import { getServerAuthSession } from "@/next-auth/next-auth-options";
 import { stripe } from "@/utils/stripe/config";
 import Stripe from "stripe";
 import {prisma} from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 const relevantEvents = new Set([
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",
@@ -53,6 +55,8 @@ export async function POST(req: Request) {
               amount: session.amount_total ?? 0, // Ensure amount is set and correct
             },
           });
+          revalidatePath("/dashboard");
+          redirect("/dashboard");
         } else {
           console.error("PaymentIntent is null or not a string");
           return new Response("Invalid PaymentIntent", { status: 400 });

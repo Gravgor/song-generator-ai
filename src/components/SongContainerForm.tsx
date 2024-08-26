@@ -203,12 +203,6 @@ export default function SongCreationForm({ session }: any) {
         const result = await stripe.redirectToCheckout({
           sessionId: sessionRequest.result.id,
         })
-        const paymentSucess = await getStripePayment(session);
-        if(paymentSucess.success === true) {
-          setIsPaymentCompleted(true);
-          setIsPaymentStarted(true);
-          console.log("Payment successful");
-        }
       } catch (error) {
         console.error("Error checking out with Stripe:", error)
       }
