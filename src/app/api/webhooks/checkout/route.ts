@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import {prisma} from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { redirectAfterPayment } from "@/actions/actions";
 const relevantEvents = new Set([
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",
@@ -42,7 +43,6 @@ export async function POST(req: Request) {
               email: session.customer_details?.email ?? "",
             },
           });
-          console.log("findUser", findUser);
           const userIdDatabase = findUser?.id
           await prisma.userPayment.create({
             data: {
@@ -55,8 +55,6 @@ export async function POST(req: Request) {
               amount: session.amount_total ?? 0, // Ensure amount is set and correct
             },
           });
-          revalidatePath("/dashboard");
-          redirect("/dashboard");
         } else {
           console.error("PaymentIntent is null or not a string");
           return new Response("Invalid PaymentIntent", { status: 400 });
@@ -69,6 +67,6 @@ export async function POST(req: Request) {
       return new Response(`Webhook Error: ${err.message}`, { status: 400 });
     }
   }
-  
+  redirectAfterPayment();
   return new Response("Webhook received", { status: 200 });
 }

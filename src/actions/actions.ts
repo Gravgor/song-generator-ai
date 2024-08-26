@@ -7,6 +7,8 @@ import {prisma} from "@/lib/prisma";
 import { loadStripe } from "@stripe/stripe-js";
 import { AISuggestions, SongCreationFormValues } from "@/types/SongCreation";
 import { getServerAuthSession } from "@/next-auth/next-auth-options";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 const openai = new OpenAI();
 
 export default async function generateSongDetails(songIdea: string): Promise<AISuggestions> {
@@ -379,4 +381,9 @@ export async function getStripePayment(userId: string) {
     success: true,
     payment: latestPayment,
   };
+}
+
+export async function redirectAfterPayment() {
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }
