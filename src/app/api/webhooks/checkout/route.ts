@@ -15,8 +15,15 @@ export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature") as string;
   const webhookSecret = process.env.TEST_STRIPE_SECRET_WEBHOOK_KEY;
   const serverSession = await getServerAuthSession();
-  const userIdSession = serverSession?.user?.id;
+  const userEmail = serverSession?.user?.email;
   let event: Stripe.Event;
+
+  const findUser = await prisma.user.findUnique({
+    where: {
+      email: userEmail ?? "",
+    },
+  });
+  const userIdDatabase = findUser?.id
 
   try {
     if (!sig || !webhookSecret)
@@ -40,7 +47,7 @@ export async function POST(req: Request) {
         if (paymentIntent) {
           await prisma.userPayment.create({
             data: {
-              userId: userIdSession ?? "",
+              userId: userIdDatabase ?? "",
               currency: session.currency ?? "",
               paymentIntent: paymentIntent,
               userCountry: session.customer_details?.address?.country ?? "",
