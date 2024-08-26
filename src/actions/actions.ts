@@ -198,18 +198,6 @@ export async function checkOutStripe(priceId: string) {
   }
 }
 
-export async function saveStripePayment(userId: string, priceId: string) {
-  try {
-    await prisma.userPayment.create({
-      data: {
-        userId,
-        paymentId: priceId,
-      },
-    })
-  } catch (error) {
-    console.error("Error saving Stripe payment:", error)
-  }
-}
 
 //// 
 
