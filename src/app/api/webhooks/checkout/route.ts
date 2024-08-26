@@ -30,7 +30,16 @@ export async function POST(req: Request) {
   }
 
   if(relevantEvents.has(event.type)) {
-    console.log("Received event", event.id);
+    try {
+      if(event.type === "checkout.session.completed") {
+        const session = event.data.object as Stripe.Checkout.Session;
+        console.log(`🔔  Payment received: ${session.payment_intent}`);
+        console.log(session);
+      }
+    } catch (err: any) {
+      console.log(`❌ Error message: ${err.message}`);
+      return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    }
   }
   return new Response('Webhook received', { status: 200 });
 }
