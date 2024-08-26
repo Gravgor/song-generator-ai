@@ -366,12 +366,17 @@ export async function clearProgress() {
 }
 
 export async function getStripePayment(userId: string) {
-  const payments = await prisma.userPayment.findMany({
+  const latestPayment = await prisma.userPayment.findFirst({
     where: {
       userId,
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
+
   return {
     success: true,
+    payment: latestPayment,
   };
 }

@@ -40,6 +40,7 @@ export async function POST(req: Request) {
               email: session.customer_details?.email ?? "",
             },
           });
+          console.log("findUser", findUser);
           const userIdDatabase = findUser?.id
           await prisma.userPayment.create({
             data: {
