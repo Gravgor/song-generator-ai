@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
                     quantity: 1,
                 },
             ],
-            success_url: `${process.env.NEXT_BASE_URL}/create-song`,
+            success_url: `${process.env.NEXT_BASE_URL}/dashboard`,
             cancel_url: `${process.env.NEXT_BASE_URL}/cancel`,
             metadata: {
                 userId: data.userId,

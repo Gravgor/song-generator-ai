@@ -67,6 +67,5 @@ export async function POST(req: Request) {
       return new Response(`Webhook Error: ${err.message}`, { status: 400 });
     }
   }
-  fetch(`${process.env.NEXT_BASE_URL}/api/stripe/redirect`)
   return new Response("Webhook received", { status: 200 });
 }
