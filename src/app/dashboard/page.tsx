@@ -10,11 +10,14 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const songs = await prisma.songs.findMany({
+  const user = await prisma.user.findUnique({
     where: {
-      userId: session.user.id,
+      email: session.user.email!,
     },
+    include: {
+      userSongs: true,
+    }
   });
 
-  return <UserDashboard songs={songs} />;
+  return <UserDashboard songs={user?.userSongs ?? []} />;
 }

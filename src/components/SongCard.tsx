@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, Typography, Button, Box } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box, Grid } from '@mui/material';
 import { styled } from '@mui/system';
 
 const SongCardContainer = styled(Card)({
@@ -20,22 +20,38 @@ const SongCardButtons = styled(Box)({
   marginTop: '1rem',
 });
 
+const CoverImage = styled('img')({
+  width: '100%',
+  height: 'auto',
+  borderRadius: '4px',
+});
+
 export default function SongCard({ song }: { song: any }) {
   return (
     <SongCardContainer>
       <CardContent>
-        <SongCardHeader>{song.title}</SongCardHeader>
-        <Typography variant="body2" color="textSecondary">
-          {song.description || 'No description available.'}
-        </Typography>
-        <SongCardButtons>
-          <Button variant="contained" color="primary">
-            Play
-          </Button>
-          <Button variant="outlined" color="secondary">
-            Edit
-          </Button>
-        </SongCardButtons>
+        <Grid container spacing={2}>
+          {/* Left side: Cover Image */}
+          <Grid item xs={4} md={3}>
+            <CoverImage src={song.cover_url_small || '/default-cover.jpg'} alt={song.title} />
+          </Grid>
+          
+          {/* Right side: Song Info */}
+          <Grid item xs={8} md={9}>
+            <SongCardHeader>{song.title}</SongCardHeader>
+            <Typography variant="body2" color="textSecondary">
+              {song.description || 'No description available.'}
+            </Typography>
+            <SongCardButtons>
+              <Button variant="contained" color="primary">
+                Play
+              </Button>
+              <Button variant="outlined" color="secondary">
+                Edit
+              </Button>
+            </SongCardButtons>
+          </Grid>
+        </Grid>
       </CardContent>
     </SongCardContainer>
   );

@@ -86,15 +86,36 @@ export async function generateLyrics(songIdea: string,
 
 
 
-  export async function handleSongGeneration(data : SongCreationFormValues) {
-    const apiKey = process.env.GOAPI_API_KEY;
+  export async function handleSongGeneration() {
+    const session = await getServerAuthSession();
+    if (!session || !session.user) {
+      throw new Error("No session or user found");
+    }
+    if (!session.user.id) {
+      const findUser = await prisma.user.findUnique({
+        where: {
+          email: session.user.email!,
+        },
+      })
+      if (!findUser) {
+        throw new Error("User not found");
+      }
+      session.user.id = findUser.id;
+    }
+    let userId = session.user.id ?? '';
+    const data = await getSongProgress(userId);
+    if (!data) {
+      throw new Error("No song data found");
+    }
+   /* const apiKey = process.env.GOAPI_API_KEY;
     const request = await fetch(`${process.env.GOAPI_URL}`,{
       method: "POST",
       body: JSON.stringify({
         "custom_mode": true,
+        "mv": "chirp-v3-0",
         "input": {
           "prompt": data.lyrics,
-          "title": "Rise From the Ashes",
+          "title": "meow meow",
           "tags": `Style: ${data.style}, Tone: ${data.tone}, Vocal Style: ${data.vocalStyle}, Influences: ${data.influences}`,
           "continue_at": 0,
           "continue_clip_id": "" 
@@ -106,6 +127,7 @@ export async function generateLyrics(songIdea: string,
       }
     })
     const response = await request.json()
+    //console.log(response)
     const taskID = response.data.task_id
     const taskRequest = await fetch(`${process.env.GOAPI_URL}/${taskID}`,{
       headers: {
@@ -115,7 +137,23 @@ export async function generateLyrics(songIdea: string,
     })
     const taskResponse = await taskRequest.json()
     console.log(taskResponse)
-    return taskResponse
+    return taskResponse*/
+    const payment = await getStripePayment(userId);
+    if (!payment.success) {
+      throw new Error("No payment found");
+    }
+    console.log(userId)
+   await prisma.songs.create({
+      data: {
+        userId: userId,
+        title: "Rise from the Ashes",
+        cover_url_small: 'https://cdn1.suno.ai/image_e0fe8bba-fac8-460b-bf1c-111111111111.png',
+        cover_url_big: 'https://cdn1.suno.ai/image_e0fe8bba-fac8-460b-bf1c-111111111111.png',
+        audio_url: 'https://cdn1.suno.ai/audio_e0fe8bba-fac8-460b-bf1c-111111111111.mp3',
+        video_url: 'https://cdn1.suno.ai/video_e0fe8bba-fac8-460b-bf1c-111111111111.mp4',
+        play_count: 0,
+      }
+    })
 }
 
 
@@ -328,6 +366,16 @@ export async function loadProgress() {
     console.error("Error loading song progress:", error);
     throw new Error("Failed to load song progress");
   }
+}
+
+export async function getSongProgress(userId: string) {
+  const progress = await prisma.songProgress.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  return progress;
 }
 
 
