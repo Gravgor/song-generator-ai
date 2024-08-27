@@ -58,7 +58,7 @@ export default function DashboardSidebar() {
           <HomeIcon style={{ marginRight: '10px' }} />
           <ListItemText primary="My Songs" />
         </StyledListItem>
-        <StyledListItem component={Link} href="/generate-song">
+        <StyledListItem component={Link} href="/create-song">
           <MusicNoteIcon style={{ marginRight: '10px' }} />
           <ListItemText primary="Generate New Song" />
         </StyledListItem>

@@ -42,7 +42,7 @@ export default function UserDashboard({ songs }: { songs: any[] }) {
       <ContentContainer>
         <HeaderContainer>
           <Typography variant="h4">My Songs</Typography>
-          <Button variant="contained" color="primary" href="/generate-song">
+          <Button variant="contained" color="primary" href="/create-song">
             Generate New Song
           </Button>
         </HeaderContainer>
@@ -63,7 +63,7 @@ export default function UserDashboard({ songs }: { songs: any[] }) {
             <Typography variant="body1" gutterBottom>
               Get started by creating your first song now!
             </Typography>
-            <Button variant="contained" color="primary" href="/generate-song">
+            <Button variant="contained" color="primary" href="/create-song">
               Create Your First Song
             </Button>
           </EmptyStateContainer>

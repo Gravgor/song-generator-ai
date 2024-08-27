@@ -12,7 +12,7 @@ import { redirect } from "next/navigation";
 const openai = new OpenAI();
 
 export default async function generateSongDetails(songIdea: string): Promise<AISuggestions> {
-   /* try {
+    try {
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
@@ -35,7 +35,7 @@ export default async function generateSongDetails(songIdea: string): Promise<AIS
             content: "Error generating song details",
             refusal: null,
         };
-    }*/
+    }
    const mockData = {
     "role": "assistant",
     "content": "Style: Power Ballad/Pop Rock\n\nInfluences: The song takes inspiration from the empowering music of artists such as Journey, Bruce Springsteen, Queen, Rachel Platten, and Sia.\n\nTone: The song will carry an empowering and motivational tone, touching on themes of perseverance, overcoming adversity, and personal growth. The verses will have a darker tone to depict the struggle, switching to triumphant and uplifting in the chorus to demonstrate victory and resilience.\n\nVocal Style: The vocals should be robust and dynamic, versatile enough to capture the softer moments of struggle but powerful and fearless when representing triumph. The vocal style would embody characteristics of great rock/pop powerhouses like Freddie Mercury or Kelly Clarkson.\n\nAccents: For the instrumental accents, it would include soaring guitar solos or complementary string sections that emphasize the highs and lows of the protagonist's journey. Piano undertones can also be used to add a layer of depth and introspection. For vocal accents, we'll use belting, emphasizing key words and phrases to underline the protagonist's determination and strength. Adding backing vocals or choir elements during the choruses will reinforce the feeling of triumphant resilience.",
@@ -51,7 +51,7 @@ export async function generateLyrics(songIdea: string,
   vocalStyle?: string,
   influences?: string,
 ): Promise<AISuggestions> {
-  /*try {
+  try {
     
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -74,7 +74,7 @@ export async function generateLyrics(songIdea: string,
       content: "Error generating lyrics",
       refusal: null,
     };
-    }*/
+    }
    const mockData = {
     "role": "assistant",
     "content": "Verse 1:\n\nIn the dead of night, when the stars align\n\nI see the fire burning in your eyes\n\nThe shadows fall, but you stand tall\n\nYou're the light that guides me through it all\n\nChorus:\n\nRise from the ashes, rise from the flames\n\nWe'll be stronger than we ever were before\n\nTogether we'll stand, hand in hand\n\nWe'll rise from the ashes, rise from the flames\n\nVerse 2:\n\nThrough the darkest days, through the coldest nights\n\nWe'll be the ones who shine the brightest light\n\nWe'll face the storm, we'll brave the fight\n\nWe'll be the ones who rise into the light\n\nChorus:\n\nRise from the ashes, rise from the flames\n\nWe'll be stronger than we ever were before\n\nTogether we'll stand, hand in hand\n\nWe'll rise from the ashes, rise from the flames\n\nBridge:\n\nWhen the world is falling apart\n\nWe'll be the ones who'll mend the broken hearts\n\nWe'll be the ones who'll light the spark\n\nWe'll be the ones who'll rise from the dark\n\nChorus:\n\nRise from the ashes, rise from the flames\n\nWe'll be stronger than we ever were before\n\nTogether we'll stand, hand in hand\n\nWe'll rise from the ashes, rise from the flames\n\nOutro:\n\nWe'll rise from the ashes, rise from the flames\n\nWe'll be stronger than we ever were before\n\nTogether we'll stand, hand in hand\n\nWe'll rise from the ashes, rise from the flames\n\n",
