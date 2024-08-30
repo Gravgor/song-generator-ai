@@ -54,7 +54,7 @@ export default function DashboardSidebar() {
         <AppName>TuneCraft</AppName>
       </LogoContainer>
       <List>
-       <StyledListItem component={Link} href="/dashboard">
+       {/*<StyledListItem component={Link} href="/dashboard">
           <HomeIcon style={{ marginRight: '10px' }} />
           <ListItemText primary="My Songs" />
         </StyledListItem>
@@ -69,7 +69,7 @@ export default function DashboardSidebar() {
         <StyledListItem component={Link} href="/settings">
           <SettingsIcon style={{ marginRight: '10px' }} />
           <ListItemText primary="Settings" />
-        </StyledListItem>
+        </StyledListItem>*/}
       </List>
     </SidebarContainer>
   );
