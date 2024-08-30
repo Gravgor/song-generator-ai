@@ -1,43 +1,11 @@
-import { getServerAuthSession } from "@/next-auth/next-auth-options";
+'use server';
+import { getServerAuthSession } from "@/lib/auth";
 import { verifySession } from "../auth";
 import { loadStripe } from "@stripe/stripe-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { stripe } from "@/utils/stripe/config";
 
-
-export async function protectedCheckOutStripe(priceId: string) {
-    const isAuthenticated = await verifySession();
-    if (!isAuthenticated) {
-        throw new Error("User is not authenticated");
-    }
-    const apiKey = process.env.PUBLIC_STRIPE_PUBLIC_KEY
-    if(!apiKey) {
-      throw new Error("Stripe public key not found")
-    }
-    const stripe = await loadStripe(apiKey)
-    if(!stripe) {
-      throw new Error("Stripe not loaded")
-    }
-    try {
-      const response = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        body: JSON.stringify({ priceId }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      const session = await response.json()
-      if(!session) {
-        throw new Error("No session returned")
-      }
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.result.id,
-      })
-    } catch (error) {
-      console.error("Error checking out with Stripe:", error)
-    }
-  }
-  
   
   
   export async function protectedGetLatestPayment(userId: string) {
@@ -55,9 +23,37 @@ export async function protectedCheckOutStripe(priceId: string) {
     });
   
     return {
-      success: true,
-      payment: latestPayment,
+      payment: latestPayment?.paymentIntent,
     };
+  }
+
+  export async function waitForPaymentConfirmation(paymentIntent: string, maxAttempts: number = 30) {
+    const isAuthenticated = await verifySession();
+    if (!isAuthenticated) {
+        throw new Error("User is not authenticated");
+    }
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const payment = await protectedCheckPaymentStatus(paymentIntent);
+      console.log(payment)
+      if (payment.status === "succeeded") {
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    return false;
+  }
+
+
+  export async function protectedCheckPaymentStatus(paymentIntent: string) {
+    const isAuthenticated = await verifySession();
+    if (!isAuthenticated) {
+        throw new Error("User is not authenticated");
+    }
+    const payment = await stripe.paymentIntents.retrieve(paymentIntent);
+    if (!payment) {
+      throw new Error("Payment intent not found");
+    }
+    return { status: payment.status };
   }
   
   export async function redirectAfterPayment() {

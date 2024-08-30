@@ -1,10 +1,10 @@
 import MainContainer from "@/components/ui/Containter";
 import { Container } from "@mui/material";
 import dynamic from "next/dynamic";
-import { getServerAuthSession } from "@/next-auth/next-auth-options";
+import { getServerAuthSession } from "@/lib/auth";
 import { SongCreationLoading } from "@/components/song/SongCreationLoading";
 
-const SongCreationForm = dynamic(() => import("../../components/song/SongContainerForm"), {
+const SongCreationForm = dynamic(() => import("../../../components/song/SongContainerForm"), {
   ssr: false,
   loading: () => <SongCreationLoading />,
 });

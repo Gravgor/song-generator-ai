@@ -1,5 +1,5 @@
 "use client";
-import { getStripePayment } from "@/actions/actions";
+import { getStripePayment } from "@/app/actions";
 import { useEffect, useState } from "react";
 import Stripe from "stripe";
 

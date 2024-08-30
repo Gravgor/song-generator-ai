@@ -1,4 +1,5 @@
-import { getServerAuthSession } from "@/next-auth/next-auth-options";
+'use server'
+import { getServerAuthSession } from "@/lib/auth";
 import { verifySession } from "../auth";
 import { prisma } from "@/lib/prisma";
 

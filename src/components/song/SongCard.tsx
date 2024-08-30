@@ -5,16 +5,32 @@ import { styled } from '@mui/system';
 import { useState, useRef } from 'react';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
+import DownloadIcon from '@mui/icons-material/Download';
+
 
 const SongCardContainer = styled(Card)({
   marginBottom: '1rem',
   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  height: '195px', // Set a fixed height for all cards
+  display: 'flex',
+  flexDirection: 'column',
 });
 
+const StyledCardContent = styled(CardContent)({
+  flexGrow: 1,
+  overflow: 'hidden', // Hide overflow content
+});
 const SongCardHeader = styled(Typography)({
   fontSize: '1.25rem',
   fontWeight: 'bold',
   marginBottom: '0.5rem',
+});
+const ButtonContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+  marginTop: 'auto',
 });
 
 const SongCardButtons = styled(Box)({
@@ -35,6 +51,8 @@ interface SongCardProps {
     clipTitle: string;
     clipAudioUrl: string;
     clipCoverUrl: string;
+    clipTags: string;
+    createdAt: Date;
     isRejected?: boolean;
   };
 }
@@ -54,6 +72,16 @@ export default function SongCard({ song }: SongCardProps) {
     }
   };
 
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = song.clipAudioUrl;
+    link.download = `${song.clipTitle}.mp3`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   return (
     <SongCardContainer>
       <CardContent>
@@ -66,7 +94,18 @@ export default function SongCard({ song }: SongCardProps) {
           {/* Right side: Song Info */}
           <Grid item xs={8} md={9}>
             <SongCardHeader>{song.clipTitle}</SongCardHeader>
-            <SongCardButtons>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Tags: {song.clipTags}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Created: {new Date(song.createdAt).toLocaleDateString()}
+            </Typography>
+            {song.isRejected && (
+              <Typography variant="body2" color="error" gutterBottom>
+                Status: Rejected
+              </Typography>
+            )}
+            <ButtonContainer>
               <Button 
                 variant="contained" 
                 color="primary" 
@@ -75,12 +114,20 @@ export default function SongCard({ song }: SongCardProps) {
               >
                 {isPlaying ? 'Pause' : 'Play'}
               </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<DownloadIcon />}
+                onClick={handleDownload}
+              >
+                Download
+              </Button>
               {!song.isRejected && (
                 <Button variant="outlined" color="secondary">
                   Edit
                 </Button>
               )}
-            </SongCardButtons>
+            </ButtonContainer>
           </Grid>
         </Grid>
       </CardContent>

@@ -4,7 +4,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, TextFiel
 import { styled } from '@mui/system';
 import { useAuth } from '@/hooks/useAuth';
 import { colors } from '@/style/style';
-import { createUser } from '@/actions/actions';
+import { createUser } from '@/app/actions';
 import { signIn } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 

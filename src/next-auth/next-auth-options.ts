@@ -1,4 +1,4 @@
-import { authenticate, createGoogleUser, createUser, getUserByEmail } from "@/actions/actions";
+import { authenticate, createGoogleUser, createUser, getUserByEmail } from "@/app/actions";
 import { User } from "@/types/User";
 import { getServerSession, type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";

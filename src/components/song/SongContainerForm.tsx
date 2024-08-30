@@ -9,7 +9,7 @@ import { SongGenerationSchema } from '@/schema/yup';
 import AuthDialog from '../auth/AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { generateLyrics } from '@/actions/actions';
+import generateSongDetails, { generateLyrics } from '@/app/actions';
 import { StyledButton } from '../ui/Button';
 import { AIResponseCard, SongIdeaCard } from '../ui/Cards';
 import { SongCreationLoading } from './SongCreationLoading';

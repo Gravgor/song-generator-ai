@@ -1,9 +1,10 @@
-import { getServerAuthSession } from "@/next-auth/next-auth-options";
+'use server';
+import { getServerAuthSession } from "@/lib/auth";
 import { verifySession } from "../auth";
 
 import { revalidatePath } from "next/cache";
 import { protectedGetSongProgress } from "../songs/dal";
-import { protectedGetLatestPayment } from "../stripe/dal";
+import { protectedGetLatestPayment, waitForPaymentConfirmation } from "../stripe/dal";
 
 
 export async function protectedHandleSongGeneration() {
@@ -28,10 +29,16 @@ export async function protectedHandleSongGeneration() {
     }
     let userId = session.user.id ?? '';
     const payment = await protectedGetLatestPayment(userId);
-    if (!payment.success) {
+    if(!payment) {
         throw new Error("No payment found");
     }
-    const data = await protectedGetSongProgress(userId);
+    const paymentConfirmed = await waitForPaymentConfirmation(payment.payment ?? '');
+    if (!paymentConfirmed) {
+        throw new Error("Payment not confirmed");
+    }
+    console.log("Payment confirmed")
+    if (paymentConfirmed === true) {
+        const data = await protectedGetSongProgress(userId);
     if (!data) {
         throw new Error("No song data found");
     }
@@ -60,6 +67,9 @@ export async function protectedHandleSongGeneration() {
     setTimeout(async () => {
         await protectedGetTask(taskID, userId)
     }, 10000)
+    } else {
+        throw new Error("Payment not confirmed");
+    }
 }
 
 export async function protectedGetTask(taskID: string, userId: string) {
@@ -75,7 +85,6 @@ export async function protectedGetTask(taskID: string, userId: string) {
         }
     })
     const taskResponse = await taskRequest.json()
-    console.log(taskResponse)
     if (taskResponse.data.status === "completed") {
         const clips = taskResponse.data.clips;
         for (const clipId in clips) {

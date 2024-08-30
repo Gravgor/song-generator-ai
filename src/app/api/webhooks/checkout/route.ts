@@ -1,10 +1,10 @@
-import { getServerAuthSession } from "@/next-auth/next-auth-options";
+import { getServerAuthSession } from "@/lib/auth";
 import { stripe } from "@/utils/stripe/config";
 import Stripe from "stripe";
 import {prisma} from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { redirectAfterPayment } from "@/actions/actions";
+//import { redirectAfterPayment } from "@/app/actions";
 const relevantEvents = new Set([
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",
