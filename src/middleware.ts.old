@@ -1,0 +1,25 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { verifySession } from './lib/auth'
+
+export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+  
+  if (path.startsWith('/dashboard')) {
+    try {
+      const session = await verifySession(request as any)
+      if (!session) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+    } catch (error) {
+      console.error('Error verifying session:', error)
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: '/dashboard/:path*',
+}

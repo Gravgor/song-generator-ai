@@ -26,6 +26,10 @@ model User {
   UserPayment      UserPayment[]
 
   SongProgress SongProgress[]
+
+  SongGeneration SongGeneration[]
+
+  Clips Clip[]
 }
 
 model UserPayment {
@@ -42,6 +46,38 @@ model UserPayment {
   User      User     @relation(fields: [userId], references: [id])
 }
 
+
+model Clip {
+  id            String   @id @default(cuid())
+  userId        String
+  clipId        String
+  clipVideoUrl  String
+  clipAudioUrl  String
+  clipCoverUrl  String
+  clipTitle     String
+  clipTags      String
+  isChosen      Boolean  @default(false)
+  isRejected    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
+  songGeneration SongGeneration @relation(fields: [songGenerationId], references: [id])
+  songGenerationId String
+
+  @@unique([userId, clipId])
+}
+
+model SongGeneration {
+  id                 String   @id @default(cuid())
+  userId             String
+  taskID             String   @unique
+  generationProgress String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id])
+  clips              Clip[]
+}
+
 model Songs {
   id              String   @id @default(cuid())
   title           String
@@ -49,6 +85,7 @@ model Songs {
   cover_url_big   String
   audio_url       String
   video_url       String
+  status          String?
   play_count      Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

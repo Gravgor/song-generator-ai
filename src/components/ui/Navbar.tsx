@@ -4,8 +4,8 @@ import { styled } from '@mui/system';
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import Link from 'next/link';
 import { useState } from 'react';
-import AuthDialog from './AuthDialog';
 import { signOut } from 'next-auth/react';
+import AuthDialog from '@/components/auth/AuthDialog';
 
 const Logo = styled('img')({
     height: 50, 

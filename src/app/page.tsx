@@ -3,10 +3,10 @@ import { AppBar, Toolbar, Typography, Button, Box, Grid, Card, Container, CardCo
 import { PlayArrow } from '@mui/icons-material';
 import { styled } from '@mui/system';
 import { useState } from "react";
-import Hero from "@/components/Hero";
-import MainContainer from "@/components/Containter";
+import Hero from "@/components/ui/Hero";
+import MainContainer from "@/components/ui/Containter";
 import { colors } from "@/style/style";
-import SongList from "@/components/SongList";
+import SongList from "@/components/song/SongList";
 
 const FeatureCard = styled(Card)({
   backgroundColor: '#fff',

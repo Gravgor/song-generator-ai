@@ -6,16 +6,17 @@ import { styled } from '@mui/system';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SongGenerationSchema } from '@/schema/yup';
-import AuthDialog from './AuthDialog';
+import AuthDialog from '../auth/AuthDialog';
 import { useSearchParams } from 'next/navigation';
 import { parseAILyrics, parseAISongDetails } from '@/helpers/parseResponse';
-import generateSongDetails, { checkOutStripe, clearProgress, generateLyrics, getStripePayment, loadProgress, redirectAfterPayment, saveSongProgress } from '@/actions/actions';
-import { StyledButton } from './Button';
-import { AIResponseCard, SongIdeaCard } from './Cards';
+import generateSongDetails, { generateLyrics } from '@/actions/actions';
+import { StyledButton } from '../ui/Button';
+import { AIResponseCard, SongIdeaCard } from '../ui/Cards';
 import { SongCreationLoading } from './SongCreationLoading';
 import { loadStripe } from '@stripe/stripe-js';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import useStripeWebhook from '@/hooks/useStripeWebhook';
+import { protectedClearProgress, protectedLoadProgress, protectedSaveProgress } from '@/lib/songs/dal';
 
 const PaymentSection = styled(Box)({
   backgroundColor: '#fff',
@@ -68,7 +69,7 @@ export default function SongCreationForm({ session }: any) {
 
   const saveProgress = async (step: number) => {
     const data = getValues();
-    const progress = await saveSongProgress({ ...data, step });
+    const progress = await protectedSaveProgress({ ...data, step });
     if (!session) {
       setSavedData({ ...data, step });
     } else {
@@ -114,9 +115,10 @@ export default function SongCreationForm({ session }: any) {
 
    useEffect(() => {
     async function getProgress() {
-      const progress = await loadProgress();
+      const progress = await protectedLoadProgress();
       if (progress) {
         setValue("songIdea", progress.songIdea || "");
+        setValue("songTitle", progress.songTitle || "");
         setValue("style", progress.style || "");
         setValue("tone", progress.tone || "");
         setValue("vocalStyle", progress.vocalStyle || "");
@@ -129,6 +131,7 @@ export default function SongCreationForm({ session }: any) {
       const data = savedData;
       if (data) {
         setValue("songIdea", data.songIdea || "");
+        setValue("songTitle", data.songTitle || "");
         setValue("style", data.style || "");
         setValue("tone", data.tone || "");
         setValue("vocalStyle", data.vocalStyle || "");
@@ -158,7 +161,7 @@ export default function SongCreationForm({ session }: any) {
   useEffect(() => {
     const clearDatabaseTimer = setTimeout(async () => {
       if (!isPaymentStarted) {
-        await  clearProgress();
+        await  protectedClearProgress();
         setSavedData({});
         console.log('Cleared song progress from database and local storage after 5 minutes.');
       }

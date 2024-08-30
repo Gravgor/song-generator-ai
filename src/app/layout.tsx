@@ -4,9 +4,9 @@ import "./globals.css";
 import '@material/web/button/filled-button.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/checkbox/checkbox.js';
-import Navbar from "@/components/Navbar";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { getServerAuthSession } from "@/next-auth/next-auth-options";
+import Navbar from "@/components/ui/Navbar";
 
 
 const roboto = Poppins({ subsets: ["latin"], weight: ['400'] });

@@ -1,6 +1,6 @@
 "use client";
 import { Skeleton } from "@mui/material";
-import { AIResponseCard } from "./Cards";
+import { AIResponseCard } from "../ui/Cards";
 
 export const SongCreationLoading = () => (
     <AIResponseCard>
