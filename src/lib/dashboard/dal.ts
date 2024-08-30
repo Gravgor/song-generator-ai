@@ -32,13 +32,13 @@ export async function protectedHandleSongGeneration() {
     if(!payment) {
         throw new Error("No payment found");
     }
-    const paymentConfirmed = await waitForPaymentConfirmation(payment.payment ?? '');
+   /* const paymentConfirmed = await waitForPaymentConfirmation(payment.payment ?? '');
     if (!paymentConfirmed) {
         throw new Error("Payment not confirmed");
     }
     console.log("Payment confirmed")
-    if (paymentConfirmed === true) {
-        const data = await protectedGetSongProgress(userId);
+    if (paymentConfirmed === true) {*/
+    const data = await protectedGetSongProgress(userId);
     if (!data) {
         throw new Error("No song data found");
     }
@@ -67,9 +67,6 @@ export async function protectedHandleSongGeneration() {
     setTimeout(async () => {
         await protectedGetTask(taskID, userId)
     }, 10000)
-    } else {
-        throw new Error("Payment not confirmed");
-    }
 }
 
 export async function protectedGetTask(taskID: string, userId: string) {
