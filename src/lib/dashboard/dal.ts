@@ -1,7 +1,7 @@
 'use server';
 import { getServerAuthSession } from "@/lib/auth";
 import { verifySession } from "../auth";
-
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { protectedGetSongProgress } from "../songs/dal";
 import { protectedGetLatestPayment, waitForPaymentConfirmation } from "../stripe/dal";
@@ -17,7 +17,7 @@ export async function protectedHandleSongGeneration() {
         throw new Error("No session found");
     }
     if (!session.user.id) {
-        const findUser = await prisma?.user.findUnique({
+        const findUser = await prisma.user.findUnique({
             where: {
                 email: session.user.email!,
             },
@@ -89,7 +89,7 @@ export async function protectedGetTask(taskID: string, userId: string) {
         const clips = taskResponse.data.clips;
         for (const clipId in clips) {
             const clip = clips[clipId as keyof typeof clips];
-            await prisma?.clip.create({
+            await prisma.clip.create({
                 data: {
                     userId: userId,
                     clipId: clipId,
@@ -102,7 +102,7 @@ export async function protectedGetTask(taskID: string, userId: string) {
                 }
             });
         }
-        await prisma?.songGeneration.update({
+        await prisma.songGeneration.update({
             where: { id: taskID },
             data: { generationProgress: "completed" }
         });
@@ -111,11 +111,11 @@ export async function protectedGetTask(taskID: string, userId: string) {
     } else if (taskResponse.data.status === "failed") {
         return { error: true, message: "Song generation failed" };
     } else if (taskResponse.data.status === "processing") {
-        const existingGeneration = await prisma?.songGeneration.findUnique({
+        const existingGeneration = await prisma.songGeneration.findUnique({
             where: { id: taskID }
         });
         if (!existingGeneration) {
-            await prisma?.songGeneration.create({
+            await prisma.songGeneration.create({
                 data: {
                     id: taskID,
                     userId,
@@ -124,7 +124,7 @@ export async function protectedGetTask(taskID: string, userId: string) {
                 }
             });
         } else {
-            await prisma?.songGeneration.update({
+            await prisma.songGeneration.update({
                 where: { id: taskID },
                 data: { generationProgress: taskResponse.data.status }
             });
@@ -151,12 +151,12 @@ export async function protectedChooseClip(clipId: string, songGenerationId: stri
     }
 
     try {
-        await prisma?.clip.update({
+        await prisma.clip.update({
             where: { id: clipId },
             data: { isChosen: true }
         });
 
-        await prisma?.clip.updateMany({
+        await prisma.clip.updateMany({
             where: {
                 songGenerationId: songGenerationId,
                 id: { not: clipId }
@@ -164,7 +164,7 @@ export async function protectedChooseClip(clipId: string, songGenerationId: stri
             data: { isRejected: true }
         });
 
-        await prisma?.songGeneration.update({
+        await prisma.songGeneration.update({
             where: { id: songGenerationId },
             data: { generationProgress: 'completed' }
         });

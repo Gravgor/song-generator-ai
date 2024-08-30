@@ -84,7 +84,7 @@ export async function protectedClearProgress() {
       let userId = session.user.id ?? '';
       
       if (!userId && session.user.email) {
-        const user = await prisma?.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
             email: session.user.email,
           },
@@ -96,7 +96,7 @@ export async function protectedClearProgress() {
         throw new Error("User ID not found");
       }
   
-      const existingProgress = await prisma?.songProgress.findFirst({
+      const existingProgress = await prisma.songProgress.findFirst({
         where: {
           userId: userId,
         },

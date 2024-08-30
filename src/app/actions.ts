@@ -91,7 +91,7 @@ export async function generateLyrics(songIdea: string,
 
 
 export async function authenticate(email: string, password: string): Promise<User | null> {
-    const user = await prisma?.user.findUnique({
+    const user = await prisma.user.findUnique({
         where: {
             email,
         },
@@ -108,7 +108,7 @@ export async function authenticate(email: string, password: string): Promise<Use
 
 export async function createUser(email: string, username: string, password: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma?.user.create({
+    const user = await prisma.user.create({
         data: {
             email,
             username,
@@ -119,7 +119,7 @@ export async function createUser(email: string, username: string, password: stri
 }
 
 export async function createGoogleUser(email: string, username: string): Promise<User> {
-    const user = await prisma?.user.create({
+    const user = await prisma.user.create({
         data: {
             email,
             username,
@@ -130,7 +130,7 @@ export async function createGoogleUser(email: string, username: string): Promise
 
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-    const user = await prisma?.user.findUnique({
+    const user = await prisma.user.findUnique({
         where: {
             email,
         },

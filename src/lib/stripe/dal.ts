@@ -5,6 +5,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { stripe } from "@/utils/stripe/config";
+import { prisma } from "@/lib/prisma";
 
   
   
@@ -13,7 +14,7 @@ import { stripe } from "@/utils/stripe/config";
     if (!isAuthenticated) {
         throw new Error("User is not authenticated");
     }
-    const latestPayment = await prisma?.userPayment.findFirst({
+    const latestPayment = await prisma.userPayment.findFirst({
       where: {
         userId,
       },
@@ -62,7 +63,7 @@ import { stripe } from "@/utils/stripe/config";
     if (!isAuthenticated) {
       throw new Error("User is not authenticated");
     }
-    const payment = await prisma?.userPayment.findFirst({
+    const payment = await prisma.userPayment.findFirst({
       where: {
         userId,
       },
