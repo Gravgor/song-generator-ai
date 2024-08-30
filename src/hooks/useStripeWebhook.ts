@@ -1,5 +1,6 @@
 "use client";
-import { getStripePayment } from "@/app/actions";
+
+import { protectedGetStripePayment } from "@/lib/stripe/dal";
 import { useEffect, useState } from "react";
 import Stripe from "stripe";
 
@@ -30,9 +31,13 @@ export default function useStripeWebhook({
     const [loading, setLoading] = useState<boolean>(false);
     useEffect(() => {
         setLoading(true);
-        getStripePayment(userId)
+        protectedGetStripePayment(userId)
             .then((data) => {
-                setLastPayment(data);
+                if (data) {
+                    setLastPayment({ success: true, payment: data });
+                } else {
+                    setLastPayment({ success: false, payment: null });
+                }
                 setLoading(false);
             })
             .catch((error) => {

@@ -55,6 +55,23 @@ import { stripe } from "@/utils/stripe/config";
     }
     return { status: payment.status };
   }
+
+
+  export async function protectedGetStripePayment(userId: string) {
+    const isAuthenticated = await verifySession();
+    if (!isAuthenticated) {
+      throw new Error("User is not authenticated");
+    }
+    const payment = await prisma?.userPayment.findFirst({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return payment;
+  }
   
   export async function redirectAfterPayment() {
     revalidatePath("/dashboard");
