@@ -41,6 +41,8 @@ interface Clip {
   clipTitle: string;
   clipAudioUrl: string;
   clipCoverUrl: string;
+  clipTags: string;
+  createdAt: Date;
   isChosen: boolean;
   isRejected: boolean;
   // ... other clip properties
@@ -142,7 +144,9 @@ export default function UserDashboard({
         <Grid container spacing={2}>
           {completedSongs.map((song) => (
             <Grid item xs={12} sm={6} md={4} key={song.id}>
-              <SongCard song={song} />
+              <SongCard
+                song={song}
+              />
             </Grid>
           ))}
         </Grid>
