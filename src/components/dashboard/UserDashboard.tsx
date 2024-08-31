@@ -6,7 +6,8 @@ import SongCard from '../song/SongCard';
 import DashboardSidebar from './DashboardSidebar';
 import { useMemo, useState } from 'react';
 import ChooseClipModal from '../ui/ChooseClipModal';
-import { protectedChooseClip } from '@/lib/dashboard/dal';
+import { addToQueue, protectedChooseClip } from '@/lib/dashboard/dal';
+import SongGenerationStatus from './SongGenerationStatus';
 
 const DashboardContainer = styled(Box)({
   display: 'flex',
@@ -58,7 +59,6 @@ export interface SongGeneration {
 interface SongInGeneration {
   id: string;
   userId: string;
-  generationProgress: string;
   taskID: string;
 }
 
@@ -109,15 +109,7 @@ export default function UserDashboard({
           <Box mb={4}>
             <Typography variant="h5" gutterBottom>Songs Being Generated</Typography>
             <Grid container spacing={2}>
-              {generatingSongs.map((gen) => (
-                <Grid item xs={12} sm={6} md={4} key={gen.id}>
-                  <Box border={1} borderRadius={2} p={2}>
-                    <Typography variant="subtitle1">Task ID: {gen.taskID}</Typography>
-                    <Typography>Status: {gen.generationProgress}</Typography>
-                    <CircularProgress size={24} />
-                  </Box>
-                </Grid>
-              ))}
+              <SongGenerationStatus taskId={generatingSongs[0].taskID} userId={generatingSongs[0].userId} />
             </Grid>
           </Box>
         )}

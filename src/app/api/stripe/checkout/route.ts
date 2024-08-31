@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
-import { protectedHandleSongGeneration } from '@/lib/dashboard/dal';
+import { protectedHandleSongGeneration } from '@/lib/songs/dal';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 

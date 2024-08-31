@@ -30,6 +30,7 @@ const ButtonContainer = styled(Box)({
   justifyContent: 'space-between',
   alignItems: 'center',
   width: '100%',
+  gap: '1rem',
   marginTop: 'auto',
 });
 
