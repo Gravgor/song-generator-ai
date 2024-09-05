@@ -1,6 +1,7 @@
 import { io } from '../../../server.js';
 import { prisma } from '../prisma.js';
 import { logger } from '../lib/logger.js';
+import { revalidatePath } from 'next/cache.js';
 
 export const processSongGeneration = async (job) => {
   const { userId, taskId } = job.data;
@@ -17,7 +18,7 @@ export const processSongGeneration = async (job) => {
         throw new Error('API key or URL is not configured');
       }
 
-      console.log(`Fetching task status for ${taskId} from ${apiUrl}`);
+      logger.info(`Fetching task status for ${taskId} from ${apiUrl}`);
       const taskRequest = await fetch(`${apiUrl}/${taskId}`, {
         headers: {
           "X-API-Key": apiKey,
@@ -30,11 +31,11 @@ export const processSongGeneration = async (job) => {
       }
 
       const taskResponse = await taskRequest.json();
-      console.log(`Task ${taskId} status: ${taskResponse.data.status}`);
+      logger.info(`Task ${taskId} status: ${taskResponse.data.status}`);
 
       if (taskResponse.data.status === "completed") {
         const clips = taskResponse.data.clips;
-        console.log(`Received clips for task ${taskId}:`, clips);
+        logger.info(`Received clips for task ${taskId}:`, clips);
 
         for (const clipId in clips) {
           const clip = clips[clipId];
@@ -66,36 +67,36 @@ export const processSongGeneration = async (job) => {
         });
 
         io.to(userId).emit('songGenerationComplete', { taskId });
-        console.log(`Song generation completed for task ${taskId}`);
+        revalidatePath('/dashboard');
+        logger.info(`Song generation completed for task ${taskId}`);
         return { message: "Clips added successfully" };
       } else if (taskResponse.data.status === "failed") {
         io.to(userId).emit('songGenerationComplete', { taskId });
-        console.error(`Song generation failed for task ${taskId}`);
+        logger.error(`Song generation failed for task ${taskId}`);
         throw new Error("Song generation failed");
       } else {
         await prisma.songGeneration.update({
           where: { id: taskId },
           data: { generationProgress: taskResponse.data.status }
         });
-
         io.to(userId).emit('songGenerationComplete', { taskId, status: taskResponse.data.status });
         retries++;
-        console.log(`Waiting for next retry (${retries}/${maxRetries}) for task ${taskId}`);
+        logger.info(`Waiting for next retry (${retries}/${maxRetries}) for task ${taskId}`);
         await new Promise(resolve => setTimeout(resolve, 10000));
       }
     } catch (error) {
-      console.error(`Error processing task ${taskId}:`, error);
+      logger.error(`Error processing task ${taskId}:`, error);
       retries++;
       if (retries >= maxRetries) {
         io.to(userId).emit('songGenerationFailed', { taskId, message: "Song generation timed out" });
         throw new Error("Song generation timed out");
       }
-      console.log(`Waiting for next retry (${retries}/${maxRetries}) for task ${taskId}`);
+      logger.info(`Waiting for next retry (${retries}/${maxRetries}) for task ${taskId}`);
       await new Promise(resolve => setTimeout(resolve, 10000));
     }
   }
 
   io.to(userId).emit('songGenerationFailed', { taskId, message: "Song generation timed out" });
-  console.error(`Song generation timed out for task ${taskId}`);
+  logger.error(`Song generation timed out for task ${taskId}`);
   throw new Error("Song generation timed out");
 };

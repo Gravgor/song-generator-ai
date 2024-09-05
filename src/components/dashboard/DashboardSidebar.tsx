@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, List, Typography, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { styled } from '@mui/system';
 import Link from 'next/link';
 import HomeIcon from '@mui/icons-material/Home';
@@ -38,12 +38,19 @@ const AppName = styled(Typography)({
 });
 
 const StyledListItem = styled(ListItem)({
-  borderRadius: '8px',
   marginBottom: '1rem',
-  transition: 'background-color 0.3s ease',
+  borderRadius: '8px',
   '&:hover': {
     backgroundColor: '#e0e0e0',
   },
+});
+
+const StyledLink = styled(Link)({
+  textDecoration: 'none',
+  color: 'inherit',
+  display: 'flex',
+  alignItems: 'center',
+  width: '100%',
 });
 
 export default function DashboardSidebar() {
@@ -54,22 +61,38 @@ export default function DashboardSidebar() {
         <AppName>TuneCraft</AppName>
       </LogoContainer>
       <List>
-       {/*<StyledListItem component={Link} href="/dashboard">
-          <HomeIcon style={{ marginRight: '10px' }} />
-          <ListItemText primary="My Songs" />
+        <StyledListItem>
+          <StyledLink href="/dashboard">
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </StyledLink>
         </StyledListItem>
-        <StyledListItem component={Link} href="/create-song">
-          <MusicNoteIcon style={{ marginRight: '10px' }} />
-          <ListItemText primary="Generate New Song" />
+        <StyledListItem>
+          <StyledLink href="/my-music">
+            <ListItemIcon>
+              <MusicNoteIcon />
+            </ListItemIcon>
+            <ListItemText primary="My Music" />
+          </StyledLink>
         </StyledListItem>
-        <StyledListItem component={Link} href="/profile">
-          <AccountCircleIcon style={{ marginRight: '10px' }} />
-          <ListItemText primary="Profile" />
+        <StyledListItem>
+          <StyledLink href="/profile">
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Profile" />
+          </StyledLink>
         </StyledListItem>
-        <StyledListItem component={Link} href="/settings">
-          <SettingsIcon style={{ marginRight: '10px' }} />
-          <ListItemText primary="Settings" />
-        </StyledListItem>*/}
+        <StyledListItem>
+          <StyledLink href="/settings">
+            <ListItemIcon>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+          </StyledLink>
+        </StyledListItem>
       </List>
     </SidebarContainer>
   );

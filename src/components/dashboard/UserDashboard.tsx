@@ -94,6 +94,8 @@ export default function UserDashboard({
     );
   }, [generatedSongs]);
 
+  const hasSongs = completedSongs.length > 0 || generatedSongs.length > 0 || rejectedSongs.length > 0 || generatingSongs.length > 0;
+
   return (
     <DashboardContainer>
       <DashboardSidebar />
@@ -105,61 +107,77 @@ export default function UserDashboard({
           </Button>
         </HeaderContainer>
         
-        {generatingSongs.length > 0 && (
-          <Box mb={4}>
-            <Typography variant="h5" gutterBottom>Songs Being Generated</Typography>
-            <Grid container spacing={2}>
-              <SongGenerationStatus taskId={generatingSongs[0].taskID} userId={generatingSongs[0].userId} />
-            </Grid>
-          </Box>
-        )}
-
-{pendingGeneratedSongs.length > 0 && (
-          <Box mb={4}>
-            <Typography variant="h5" gutterBottom>Choose Your Favorite Clip</Typography>
-            <Grid container spacing={2}>
-              {pendingGeneratedSongs.map((gen) => (
-                <Grid item xs={12} sm={6} md={4} key={gen.id}>
-                  <Box border={1} borderRadius={2} p={2}>
-                    <Typography variant="subtitle1">Song: {gen.clips[0].clipTitle}</Typography>
-                    <Button onClick={() => setSelectedGeneration(gen)}>
-                      Choose Clip
-                    </Button>
-                  </Box>
+        {!hasSongs ? (
+          <EmptyStateContainer>
+            <Typography variant="h5" gutterBottom>You don't have any songs yet</Typography>
+            <Typography variant="body1" gutterBottom>Start by generating your first song!</Typography>
+            <Button variant="contained" color="primary" href="/create-song" sx={{ mt: 2 }}>
+              Generate New Song
+            </Button>
+          </EmptyStateContainer>
+        ) : (
+          <>
+            {generatingSongs.length > 0 && (
+              <Box mb={4}>
+                <Typography variant="h5" gutterBottom>Songs Being Generated</Typography>
+                <Grid container spacing={2}>
+                  <SongGenerationStatus taskId={generatingSongs[0].taskID} userId={generatingSongs[0].userId} />
                 </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
-        
-        <Typography variant="h5" gutterBottom>My Songs</Typography>
-        <Grid container spacing={2}>
-          {completedSongs.map((song) => (
-            <Grid item xs={12} sm={6} md={4} key={song.id}>
-              <SongCard
-                song={song}
+              </Box>
+            )}
+
+            {pendingGeneratedSongs.length > 0 && (
+              <Box mb={4}>
+                <Typography variant="h5" gutterBottom>Choose Your Favorite Clip</Typography>
+                <Grid container spacing={2}>
+                  {pendingGeneratedSongs.map((gen) => (
+                    <Grid item xs={12} sm={6} md={4} key={gen.id}>
+                      <Box border={1} borderRadius={2} p={2}>
+                        <Typography variant="subtitle1">Song: {gen.clips[0].clipTitle}</Typography>
+                        <Button onClick={() => setSelectedGeneration(gen)}>
+                          Choose Clip
+                        </Button>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+            
+            {completedSongs.length > 0 && (
+              <Box mb={4}>
+                <Typography variant="h5" gutterBottom>My Songs</Typography>
+                <Grid container spacing={2}>
+                  {completedSongs.map((song) => (
+                    <Grid item xs={12} sm={6} md={4} key={song.id}>
+                      <SongCard song={song} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {rejectedSongs.length > 0 && (
+              <Box mt={4}>
+                <Typography variant="h5" gutterBottom>Rejected Songs</Typography>
+                <Grid container spacing={2}>
+                  {rejectedSongs.map((song) => (
+                    <Grid item xs={12} sm={6} md={4} key={song.id}>
+                      <SongCard song={song} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {selectedGeneration && (
+              <ChooseClipModal
+                generation={selectedGeneration}
+                onChoose={handleChooseClip}
+                onClose={() => setSelectedGeneration(null)}
               />
-            </Grid>
-          ))}
-        </Grid>
-
-        <Box mt={4}>
-          <Typography variant="h5" gutterBottom>Rejected Songs</Typography>
-          <Grid container spacing={2}>
-            {rejectedSongs.map((song) => (
-              <Grid item xs={12} sm={6} md={4} key={song.id}>
-                <SongCard song={song} />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {selectedGeneration && (
-          <ChooseClipModal
-            generation={selectedGeneration}
-            onChoose={handleChooseClip}
-            onClose={() => setSelectedGeneration(null)}
-          />
+            )}
+          </>
         )}
       </ContentContainer>
     </DashboardContainer>
