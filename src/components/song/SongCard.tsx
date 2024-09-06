@@ -6,44 +6,71 @@ import { useState, useRef } from 'react';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import DownloadIcon from '@mui/icons-material/Download';
-
+import EditIcon from '@mui/icons-material/Edit';
+import { colors } from '@/style/style';
 
 const SongCardContainer = styled(Card)({
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: '12px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   marginBottom: '1rem',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  height: '195px', // Set a fixed height for all cards
-  display: 'flex',
-  flexDirection: 'column',
+  overflow: 'hidden',
+  transition: 'all 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-5px)',
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)',
+  },
 });
 
 const StyledCardContent = styled(CardContent)({
-  flexGrow: 1,
-  overflow: 'hidden', // Hide overflow content
+  padding: '1.5rem',
 });
+
 const SongCardHeader = styled(Typography)({
   fontSize: '1.25rem',
   fontWeight: 'bold',
   marginBottom: '0.5rem',
-});
-const ButtonContainer = styled(Box)({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  width: '100%',
-  gap: '1rem',
-  marginTop: 'auto',
+  color: '#FFFFFF',
+  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
 });
 
-const SongCardButtons = styled(Box)({
+const SongInfo = styled(Typography)({
+  color: 'rgba(255, 255, 255, 0.7)',
+  marginBottom: '0.5rem',
+});
+
+const ButtonContainer = styled(Box)({
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+  gap: '0.5rem',
   marginTop: '1rem',
+});
+
+const ActionButton = styled(Button)({
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  color: '#FFFFFF',
+  padding: '0.5rem 1rem',
+  borderRadius: '20px',
+  textTransform: 'none',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+});
+
+const PlayButton = styled(ActionButton)({
+  backgroundColor: colors.primary,
+  '&:hover': {
+    backgroundColor: colors.secondary,
+  },
 });
 
 const CoverImage = styled('img')({
   width: '100%',
   height: 'auto',
-  borderRadius: '4px',
+  borderRadius: '8px',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
 });
 
 interface SongCardProps {
@@ -82,56 +109,48 @@ export default function SongCard({ song }: SongCardProps) {
     document.body.removeChild(link);
   };
 
-
   return (
     <SongCardContainer>
-      <CardContent>
+      <StyledCardContent>
         <Grid container spacing={2}>
-          {/* Left side: Cover Image */}
           <Grid item xs={4} md={3}>
             <CoverImage src={song.clipCoverUrl || '/default-cover.jpg'} alt={song.clipTitle} />
           </Grid>
-          
-          {/* Right side: Song Info */}
           <Grid item xs={8} md={9}>
-            <SongCardHeader>{song.clipTitle}</SongCardHeader>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
+            <SongCardHeader variant="h6">{song.clipTitle}</SongCardHeader>
+            <SongInfo variant="body2">
               Tags: {song.clipTags}
-            </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
+            </SongInfo>
+            <SongInfo variant="body2">
               Created: {new Date(song.createdAt).toLocaleDateString()}
-            </Typography>
+            </SongInfo>
             {song.isRejected && (
-              <Typography variant="body2" color="error" gutterBottom>
+              <SongInfo variant="body2" sx={{ color: 'error.main' }}>
                 Status: Rejected
-              </Typography>
+              </SongInfo>
             )}
             <ButtonContainer>
-              <Button 
-                variant="contained" 
-                color="primary" 
+              <PlayButton
                 startIcon={isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 onClick={handlePlayPause}
               >
                 {isPlaying ? 'Pause' : 'Play'}
-              </Button>
-              <Button
-                variant="outlined"
-                color="primary"
+              </PlayButton>
+              <ActionButton
                 startIcon={<DownloadIcon />}
                 onClick={handleDownload}
               >
                 Download
-              </Button>
+              </ActionButton>
               {!song.isRejected && (
-                <Button variant="outlined" color="secondary">
+                <ActionButton startIcon={<EditIcon />}>
                   Edit
-                </Button>
+                </ActionButton>
               )}
             </ButtonContainer>
           </Grid>
         </Grid>
-      </CardContent>
+      </StyledCardContent>
       <audio ref={audioRef} src={song.clipAudioUrl} onEnded={() => setIsPlaying(false)} />
     </SongCardContainer>
   );

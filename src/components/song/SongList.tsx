@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Grid,
   Card,
@@ -9,111 +9,198 @@ import {
   Typography,
   IconButton,
   Box,
-  Slider,
   Backdrop,
+  CircularProgress,
 } from "@mui/material";
-import { PlayArrow, Pause } from "@mui/icons-material";
+import { PlayArrow, Pause, Memory } from "@mui/icons-material";
 import { styled } from "@mui/system";
-import { colors } from "@/style/style";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import { getAllAccessSongs } from "@/lib/songs/allAccess";
+
+
+const colors = {
+  primary: '#3f51b5',
+  secondary: '#303f9f',
+  text: '#ffffff',
+  buttonText: '#ffffff',
+  background: '#0a192f',
+};
+
+const AIBackground = styled(Box)({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: -1,
+  background: `linear-gradient(45deg, ${colors.background} 0%, #1a2a4a 100%)`,
+});
+
+const FloatingParticle = styled(Box)({
+  position: 'absolute',
+  width: '4px',
+  height: '4px',
+  background: 'rgba(255, 255, 255, 0.5)',
+  borderRadius: '50%',
+  animation: 'float 15s infinite linear',
+  '@keyframes float': {
+    '0%': { transform: 'translate(0, 0)' },
+    '100%': { transform: 'translate(100vw, 100vh)' },
+  },
+});
+
+
+const CarouselContainer = styled(Box)({
+  position: 'relative',
+  width: '100%',
+  '& .slick-slide': {
+    padding: '0 10px',
+  },
+  '& .slick-prev, & .slick-next': {
+    zIndex: 1,
+    '&:before': {
+      color: colors.primary,
+    },
+  },
+});
+
+const FullWidthCarouselContainer = styled(Box)({
+  width: '100vw',
+  marginLeft: 'calc(-50vw + 50%)',
+  marginRight: 'calc(-50vw + 50%)',
+  '& .slick-slide': {
+    padding: '0 10px',
+  },
+  '& .slick-prev, & .slick-next': {
+    zIndex: 1,
+    '&:before': {
+      color: colors.primary,
+    },
+  },
+});
 
 const SongCard = styled(Card)(({ theme }) => ({
-  backgroundColor: "#ffffff",
-  borderRadius: "8px",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  display: "flex",
-  width: "400px",
-  height: "180px",
-  cursor: "pointer",
-  position: "relative",
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  borderRadius: '12px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+  backdropFilter: 'blur(10px)',
+  display: 'flex',
+  width: '100%',
+  height: '200px',
+  cursor: 'pointer',
+  position: 'relative',
   zIndex: 1,
-  transition: "transform 0.5s ease, width 0.5s ease, height 0.5s ease, top 0.5s ease, left 0.5s ease",
-  "&:hover": {
-    transform: "scale(1.02)",
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)',
   },
-}));
-
-const ExpandedSongCard = styled(SongCard)(({ theme }) => ({
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%) scale(1.1)",
-  width: "80%",
-  height: "auto",
-  maxHeight: "80vh",
-  zIndex: 1300,
-  overflow: "auto",
 }));
 
 const CardContentContainer = styled(CardContent)({
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "flex-start",
-  padding: "1rem",
+  display: 'flex',
+  flexDirection: 'row',
+  padding: '1rem',
   flex: 1,
-  overflow: "hidden",
+  overflow: 'hidden',
+  color: colors.text,
 });
 
 const SongCardContent = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
+  display: 'flex',
+  flexDirection: 'column',
   flex: 1,
+  marginLeft: '1rem',
 });
 
-const ExpandableLyrics = styled(Box)({
-  marginTop: "1rem",
-  overflow: "hidden",
-  position: "relative",
+const SongTitle = styled(Typography)({
+  color: '#FFFFFF',  // Changed to white for better visibility
+  fontWeight: 'bold',
+  fontSize: '1.2rem',  // Increased font size
+  marginBottom: '0.25rem',
+  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',  // Added text shadow for better contrast
 });
+
+const SongStyle = styled(Typography)({
+  color: colors.secondary,
+  fontSize: '0.9rem',
+  marginBottom: '0.5rem',
+});
+const ExpandableLyrics = styled(Typography)({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: 'vertical',
+});
+
+const PlayButton = styled(IconButton)({
+  position: 'absolute',
+  bottom: '1rem',
+  right: '1rem',
+  backgroundColor: colors.primary,
+  color: colors.buttonText,
+  '&:hover': {
+    backgroundColor: colors.secondary,
+  },
+});
+
+const ExpandedSongCard = styled(SongCard)(({ theme }) => ({
+  position: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%) scale(1.1)',
+  width: '80%',
+  height: 'auto',
+  maxHeight: '80vh',
+  zIndex: 1300,
+  overflow: 'auto',
+}));
+
 
 const BackdropOverlay = styled(Backdrop)({
   zIndex: 1200,
-  color: "#fff",
-  transition: "all 0.5s ease",
+  color: '#fff',
+  transition: 'all 0.5s ease',
 });
 
-const mockSongs = [
-  {
-    id: 1,
-    title: "Dreams of Tomorrow",
-    style: "Pop, Upbeat",
-    lyrics: "Life is just a journey, Take it step by step...",
-    image: "https://via.placeholder.com/150",
-    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+const AIIcon = styled(Memory)({
+  color: colors.primary,
+  marginRight: '0.5rem',
+});
+
+const StyledSlider = styled(Slider)({
+  color: colors.primary,
+  '& .MuiSlider-thumb': {
+    backgroundColor: colors.primary,
   },
-  {
-    id: 2,
-    title: "Echoes in the Rain",
-    style: "Rock, Melancholic",
-    lyrics: "I hear the echoes, in the pouring rain...",
-    image: "https://via.placeholder.com/150",
-    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+  '& .MuiSlider-track': {
+    backgroundColor: colors.primary,
   },
-  {
-    id: 3,
-    title: "Echoes in the Rain",
-    style: "Rock, Melancholic",
-    lyrics: "I hear the echoes, in the pouring rain...",
-    image: "https://via.placeholder.com/150",
-    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-  },
-  {
-    id: 4,
-    title: "Echoes in the Rain",
-    style: "Rock, Melancholic",
-    lyrics: "I hear the echoes, in the pouring rain...",
-    image: "https://via.placeholder.com/150",
-    audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-  },
-  // Add more mock songs as needed
-];
+});
+
+
+interface Song {
+  id: string;
+  clipCoverUrl: string;
+  clipTitle: string;
+  clipTags: string;
+  clipAudioUrl: string;
+}
 
 export default function SongList() {
-  const [playingSong, setPlayingSong] = useState<any>(null);
-  const [expandedSong, setExpandedSong] = useState<any>(null);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false); // Track animation state
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [playingSong, setPlayingSong] = useState<Song | null>(null);
+  const [expandedSong, setExpandedSong] = useState<Song | null>(null);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [style, setStyle] = useState<any>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const sliderRef = useRef<Slider | null>(null);
 
   const handlePlayPause = (song: any) => {
     if (playingSong && playingSong.id === song.id) {
@@ -136,23 +223,45 @@ export default function SongList() {
     }
   };
 
+  const settings = {
+    dots: false,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    pauseOnHover: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        }
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      }
+    ]
+  };
+
   const handleCardClick = (song: any) => {
     if (isAnimating) return;
-
-    // Get the card's bounding box to calculate the position
     const rect = cardRef.current?.getBoundingClientRect();
     const top = rect?.top ?? 0;
     const left = rect?.left ?? 0;
     const width = rect?.width ?? 0;
     const height = rect?.height ?? 0;
-
-    // Calculate the position and size to center the card on screen
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const centerX = windowWidth / 2;
     const centerY = windowHeight / 2;
 
-    // Update style to move and expand the card
     setStyle({
       top: `${centerY - height / 2}px`,
       left: `${centerX - width / 8}px`,
@@ -173,164 +282,91 @@ export default function SongList() {
   };
 
   const handleClose = () => {
-    setStyle({}); // Reset style
+    setStyle({}); 
     setExpandedSong(null);
   };
 
+  useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        const fetchedSongs = await getAllAccessSongs();
+        setSongs(fetchedSongs);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch songs. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchSongs();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
+
   return (
     <>
-    <Typography variant="h4" sx={{ mb: 4, textAlign: 'center' }}>
-        Latest Generated Song by Our Users
-    </Typography>
-      <Grid container spacing={3}>
-        {mockSongs.map((song) => (
-          <Grid item xs={12} sm={6} md={4} key={song.id}>
-            <SongCard
-              ref={cardRef}
-              onClick={() => handleCardClick(song)}
-              style={expandedSong?.id === song.id ? style : {}}
-            >
-              <CardContentContainer>
-                {expandedSong?.id === song.id ? (
-                  <>
-                  <div className="flex flex-col gap-4">
-                    <div className="flex gap-2">
-                      <CardMedia
-                        component="img"
-                        sx={{ width: 200, height: 200, marginRight: "1rem" }}
-                        image={song.image}
-                        alt={song.title}
-                      />
-                      <SongCardContent>
-                        <Typography variant="h6" sx={{ mb: 1 }}>
-                          {song.title}
-                        </Typography>
-                        <Typography variant="body2">
-                        <span className="font-bold">
-                            Style
-                          </span>: {song.style}
-                        </Typography>
-                        <Typography variant="body2">
-                          <span className="font-bold">
-                            Influences
-                          </span>: Pop, Rock
-                        </Typography>
-                        <Typography variant="body2">
-                        <span className="font-bold">
-                            Tone
-                          </span>: Pop, Rock
-                        </Typography>
-                        <Typography variant="body2">
-                        <span className="font-bold">
-                            Vocals
-                          </span>: Pop, Rock
-                        </Typography>
-                        <Typography variant="body2">
-                        <span className="font-bold">
-                            Accent
-                          </span>: Pop, Rock
-                        </Typography>
-                      </SongCardContent>
-                    </div>
-                    <SongCardContent>
-                      <ExpandableLyrics>
-                        <Typography variant="body2">
-                          <span className="font-bold">Lyrics</span>: {song.lyrics}
-                        </Typography>
-                      </ExpandableLyrics>
-                    </SongCardContent>
-                    <div className="flex gap-2">
-                      <IconButton
-                        color="primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePlayPause(song);
-                        }}
-                        sx={{ color: colors.primary }}
-                        disabled={isAnimating} // Disable interaction during animation
-                      >
-                        {playingSong && playingSong.id === song.id ? (
-                          audioRef.current?.paused ? <PlayArrow /> : <Pause />
-                        ) : (
-                          <PlayArrow />
-                        )}
-                      </IconButton>
-                      <Slider
-                        value={audioRef.current?.currentTime || 0}
-                        min={0}
-                        max={audioRef.current?.duration || 100}
-                        onChange={(e, newValue) => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = newValue as number;
-                          }
-                        }}
-                        sx={{ ml: 2, flex: 1 }}
-                        disabled={isAnimating} 
-                      />
-                    </div>
-                  </div>
-                  </>
-                ) : (
-                  <>
+      <Typography variant="h4" sx={{ mb: 4, textAlign: 'center', color: colors.text }}>
+        <AIIcon />
+        Latest AI-Generated Songs by Our Users
+      </Typography>
+      <FullWidthCarouselContainer>
+        <Slider {...settings}>
+          {songs.map((song) => (
+            <Box key={song.id} sx={{ padding: '10px' }}>
+              <SongCard onClick={() => handleCardClick(song)}>
+                <CardContentContainer>
                   <CardMedia
-                  component="img"
-                  sx={{ width: 150, height: 150, marginRight: "1rem" }}
-                  image={song.image}
-                  alt={song.title}
-                />
-                <SongCardContent>
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    {song.title}
-                  </Typography>
-
-                  <ExpandableLyrics>
-                    <Typography variant="body2">
-                      {expandedSong && expandedSong.id === song.id
-                        ? song.lyrics
-                        : `${song.lyrics.substring(0, 100)}...`}
-                    </Typography>
-                  </ExpandableLyrics>
-
-                  <Box sx={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
-                    <IconButton
-                      color="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePlayPause(song);
-                      }}
-                      sx={{ color: colors.primary }}
-                      disabled={isAnimating} // Disable interaction during animation
-                    >
-                      {playingSong && playingSong.id === song.id ? (
-                        audioRef.current?.paused ? <PlayArrow /> : <Pause />
-                      ) : (
-                        <PlayArrow />
-                      )}
-                    </IconButton>
-                    <Slider
-                      value={audioRef.current?.currentTime || 0}
-                      min={0}
-                      max={audioRef.current?.duration || 100}
-                      onChange={(e, newValue) => {
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = newValue as number;
-                        }
-                      }}
-                      sx={{ ml: 2, flex: 1 }}
-                      disabled={isAnimating} 
-                    />
-                  </Box>
-                </SongCardContent>
-                  </>
-                )}
-              </CardContentContainer>
-            </SongCard>
-          </Grid>
-        ))}
-      </Grid>
+                    component="img"
+                    sx={{ width: 150, height: 150, borderRadius: '8px' }}
+                    image={song.clipCoverUrl}
+                    alt={song.clipTitle}
+                  />
+                  <SongCardContent>
+                    <SongTitle variant="h6">{song.clipTitle}</SongTitle>
+                    <SongStyle variant="subtitle2">{song.clipTags}</SongStyle>
+                    <ExpandableLyrics variant="body2">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget sapien.
+                    </ExpandableLyrics>
+                  </SongCardContent>
+                  <PlayButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePlayPause(song);
+                    }}
+                  >
+                    {playingSong && playingSong.id === song.id ? (
+                      audioRef.current?.paused ? <PlayArrow /> : <Pause />
+                    ) : (
+                      <PlayArrow />
+                    )}
+                  </PlayButton>
+                </CardContentContainer>
+              </SongCard>
+            </Box>
+          ))}
+        </Slider>
+      </FullWidthCarouselContainer>
 
       {expandedSong && (
-        <BackdropOverlay open={Boolean(expandedSong)} onClick={handleClose} />
+        <BackdropOverlay open={Boolean(expandedSong)} onClick={handleClose}>
+          <ExpandedSongCard>
+            {/* ... keep your expanded song card content ... */}
+          </ExpandedSongCard>
+        </BackdropOverlay>
       )}
     </>
   );

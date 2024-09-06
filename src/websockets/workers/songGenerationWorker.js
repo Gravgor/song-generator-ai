@@ -1,4 +1,4 @@
-import { io } from '../../../server.js';
+import { io } from '../../../songGenerationServer.js';
 import { prisma } from '../prisma.js';
 import { logger } from '../lib/logger.js';
 import { revalidatePath } from 'next/cache.js';

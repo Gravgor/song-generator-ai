@@ -11,7 +11,7 @@ export default function SongGenerationStatus({ taskId, userId }: { taskId: strin
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const socket = io();
+    const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
       socket.emit('join', userId);

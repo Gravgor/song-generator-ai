@@ -2,6 +2,8 @@ import UserDashboard from '@/components/dashboard/UserDashboard';
 import { prisma } from '@/lib/prisma';
 import { getServerAuthSession } from "@/lib/auth";
 import { redirect } from 'next/navigation';
+import UserDashboardLoading from '@/components/dashboard/UserDashboardLoading';
+import { Suspense } from 'react';
 
 export default async function DashboardPage() {
   const session = await getServerAuthSession();
@@ -54,11 +56,13 @@ export default async function DashboardPage() {
   });
 
   return (
+   <Suspense fallback={<UserDashboardLoading />}>
     <UserDashboard 
       completedSongs={completedSongs} 
       generatedSongs={generatedSongs}
       rejectedSongs={rejectedSongs}
       generatingSongs={generatingSongs}
     />
+   </Suspense>
   );
 }
