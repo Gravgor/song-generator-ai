@@ -142,7 +142,7 @@ export default function UserDashboard({
         
         {!hasSongs ? (
           <StyledCard sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant="h5" gutterBottom sx={{ color: '#FFFFFF' }}>You don't have any songs yet</Typography>
+            <Typography variant="h5" gutterBottom sx={{ color: '#FFFFFF' }}>You don&apost have any songs yet</Typography>
             <Typography variant="body1" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Start by generating your first song!</Typography>
             <GenerateButton
               variant="contained"

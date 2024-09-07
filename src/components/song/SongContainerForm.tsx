@@ -15,7 +15,6 @@ import useLocalStorage from '@/hooks/useLocalStorage';
 import { protectedClearProgress, protectedLoadProgress, protectedSaveProgress } from '@/lib/songs/dal';
 import { Memory, DataObject, CloudQueue, MusicNote, Lightbulb, LibraryMusic } from '@mui/icons-material';
 import { CustomSlider, EditableField, FeatureIcon, FormContainer, PricingCard, SliderContainer, SongDetailsContainer, StepHeader, StepIndicator, StyledButton, StyledLinearProgress, StyledTextField } from './styled-components/Form/components';
-import * as yup from 'yup';
 
 
 
@@ -228,7 +227,7 @@ export default function SongCreationForm({ session }: any) {
             ].map((item, index) => (
               <Grid item xs={12} sm={4} key={index}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Box component={item.icon} sx={{ fontSize: 40, mb: 1 }} />
+                  <Box component={item.icon} sx={{ fontSize: 40, mb: 1, color: '#fffff' }} />
                   <Typography variant="h6" gutterBottom>{item.title}</Typography>
                   <Controller
                     key={item.value}
