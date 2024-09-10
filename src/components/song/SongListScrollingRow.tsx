@@ -29,7 +29,7 @@ const scrollAnimation = keyframes`
 const ScrollingContainer = styled('div')({
   display: 'flex',
   width: '200%', // Width should be double to create the infinite effect
-  animation: `${scrollAnimation} 20s linear infinite`,
+  animation: `${scrollAnimation} 60s linear infinite`,
 });
 
 const SongCard = styled(Card)(({ theme }) => ({

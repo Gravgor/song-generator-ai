@@ -1,6 +1,6 @@
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-import { Box, Card, TextField, Button, LinearProgress, Paper } from "@mui/material";
+import { Box, Card, TextField, Button, LinearProgress, Paper, Typography } from "@mui/material";
 import Slider from "react-slick";
 import { Edit as EditIcon } from '@mui/icons-material';
 import { colors } from "@/style/style";
@@ -194,4 +194,23 @@ export const SongDetailsContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
+  }));
+
+
+  export const StyledPaper = styled(Paper)(({ theme }) => ({
+    padding: '2rem',
+    textAlign: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+  }));
+  
+  export const StyledIcon = styled(Box)(({ theme }) => ({
+    fontSize: 48,
+    marginBottom: '1rem',
+    color: colors.primary,
+  }));
+  
+  export const StyledTypography = styled(Typography)(({ theme }) => ({
+    color: colors.text,
+    fontWeight: 'bold',
   }));

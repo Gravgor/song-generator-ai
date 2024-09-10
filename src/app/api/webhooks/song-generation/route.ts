@@ -1,4 +1,4 @@
-import { addSongGenerationJob } from "@/websockets/queue";
+import { addSongGenerationJob } from "../../../../../server/websockets/queue";
 
 export async function POST(req: Request, res: Response) {
     const { userId, taskId } = await req.json();

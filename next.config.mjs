@@ -6,7 +6,7 @@ const nextConfig = {
         config.externals.push('bull', 'ioredis');
       }
       return config;
-    },
+    }
   }
   
 export default nextConfig;

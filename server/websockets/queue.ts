@@ -1,5 +1,5 @@
 import Queue from 'bull';
-import Redis from 'ioredis';
+import {Redis} from 'ioredis';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -37,7 +37,7 @@ songGenerationQueue.on('error', (error) => {
   console.error('Queue error:', error);
 });
 
-export const addSongGenerationJob = async (userId, taskId) => {
+export const addSongGenerationJob = async (userId: string, taskId: string) => {
   try {
     const job = await songGenerationQueue.add({ userId, taskId });
     console.log(`Job added to queue: ${job.id}`);

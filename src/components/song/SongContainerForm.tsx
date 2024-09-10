@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Typography, Box, Grid, StepIcon} from '@mui/material';
+import { Typography, Box, Grid, StepIcon } from '@mui/material';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SongGenerationSchema } from '@/schema/yup';
@@ -14,7 +14,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { protectedClearProgress, protectedLoadProgress, protectedSaveProgress } from '@/lib/songs/dal';
 import { Memory, DataObject, CloudQueue, MusicNote, Lightbulb, LibraryMusic } from '@mui/icons-material';
-import { CustomSlider, EditableField, FeatureIcon, FormContainer, PricingCard, SliderContainer, SongDetailsContainer, StepHeader, StepIndicator, StyledButton, StyledLinearProgress, StyledTextField } from './styled-components/Form/components';
+import { CustomSlider, EditableField, FeatureIcon, FormContainer, PricingCard, SliderContainer, SongDetailsContainer, StepHeader, StepIndicator, StyledButton, StyledLinearProgress, StyledTextField, StyledPaper, StyledIcon, StyledTypography } from './styled-components/Form/components';
 
 
 
@@ -25,8 +25,8 @@ export default function SongCreationForm({ session }: any) {
   const [loading, setLoading] = useState<boolean>(false);
   const [isAIResponseReceived, setIsAIResponseReceived] = useState<boolean>(false);
   const [openLoginDialog, setOpenLoginDialog] = useState<boolean>(false);
-  const [step, setStep] = useState(0); 
-  const [generationCount, setGenerationCount] = useState(1); 
+  const [step, setStep] = useState(0);
+  const [generationCount, setGenerationCount] = useState(1);
   const [isPaymentStarted, setIsPaymentStarted] = useState(false);
   const searchParams = useSearchParams();
   const [savedData, setSavedData] = useLocalStorage('songCreationData', {});
@@ -35,7 +35,7 @@ export default function SongCreationForm({ session }: any) {
   const { control, handleSubmit, formState: { errors, isValid }, trigger, getValues, setValue } = useForm({
     resolver: yupResolver(SongGenerationSchema),
     mode: 'onChange',
-    context: { step }, 
+    context: { step },
   });
 
 
@@ -44,6 +44,12 @@ export default function SongCreationForm({ session }: any) {
       const progress = await protectedLoadProgress();
       if (progress) {
         setValue("songIdea", progress.songIdea || "");
+        setValue("style", progress.style || "");
+        setValue("tone", progress.tone || "");
+        setValue("vocalStyle", progress.vocalStyle || "");
+        setValue("influences", progress.influences || "");
+        setValue("songTitle", progress.songTitle || "");
+        setValue("lyrics", progress.lyrics || "");
         setStep(progress.step || 0);
       }
     }
@@ -58,8 +64,8 @@ export default function SongCreationForm({ session }: any) {
         setValue("songTitle", data.songTitle || "");
         setValue("lyrics", data.lyrics || "");
         setStep(data.step || 0);
+      }
     }
-  }
     if (session) {
       getProgress();
     } else {
@@ -81,7 +87,7 @@ export default function SongCreationForm({ session }: any) {
   useEffect(() => {
     const clearDatabaseTimer = setTimeout(async () => {
       if (!isPaymentStarted) {
-        await  protectedClearProgress();
+        await protectedClearProgress();
         setSavedData({});
         console.log('Cleared song progress from database and local storage after 5 minutes.');
       }
@@ -101,7 +107,7 @@ export default function SongCreationForm({ session }: any) {
     console.log(data);
     setLoading(true);
     try {
-      if(step === 0) {
+      if (step === 0) {
         const request = await generateSongDetails(data.songIdea);
         const parsedResponse = parseAISongDetails(request.content);
         setInitialResponse(parsedResponse);
@@ -110,7 +116,7 @@ export default function SongCreationForm({ session }: any) {
         setValue("vocalStyle", parsedResponse.vocalStyle);
         setIsAIResponseReceived(true);
         setLoading(false);
-        setStep(1); 
+        setStep(1);
         setGenerationCount(1);
         saveProgress(1);
       } else if (step === 1) {
@@ -127,7 +133,11 @@ export default function SongCreationForm({ session }: any) {
         setFinalTitle(parseLyrics.title);
         setFinalLyrics(parseLyrics.lyrics);
         setLoading(false);
-        setStep(2); 
+        saveProgress(2);
+        setStep(2);
+      } else if (step === 2) {
+        setLoading(false);
+        handlePayment();
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -138,6 +148,7 @@ export default function SongCreationForm({ session }: any) {
 
   const saveProgress = async (step: number) => {
     const data = getValues();
+    console.log(data);
     const progress = await protectedSaveProgress({ ...data, step });
     if (!session) {
       setSavedData({ ...data, step });
@@ -155,7 +166,7 @@ export default function SongCreationForm({ session }: any) {
   const handlePayment = async () => {
     if (session !== null) {
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
-      if(!stripe) {
+      if (!stripe) {
         console.error("Stripe not initialized");
         return;
       }
@@ -170,7 +181,7 @@ export default function SongCreationForm({ session }: any) {
           },
         })
         const sessionRequest = await response.json()
-        if(!sessionRequest) {
+        if (!sessionRequest) {
           throw new Error("No session returned")
         }
         const result = await stripe.redirectToCheckout({
@@ -195,104 +206,106 @@ export default function SongCreationForm({ session }: any) {
 
   const renderStepContent = (step: number) => {
     switch (step) {
-      case 0: 
-      return (
-        <>
-          <Controller
-            name="songIdea"
-            control={control}
-            defaultValue=""
-            render={({ field, fieldState: { error } }) => (
-              <StyledTextField
-                fullWidth
-                multiline
-                rows={4}
-                placeholder="Describe your song idea..."
-                {...field}
-                error={!!error}
-                helperText={error ? error.message : ""}
-              />
-            )}
-          />
-        </>
-      )
+      case 0:
+        return (
+          <>
+            <Controller
+              name="songIdea"
+              control={control}
+              defaultValue=""
+              render={({ field, fieldState: { error } }) => (
+                <StyledTextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  placeholder="Describe your song idea..."
+                  {...field}
+                  error={!!error}
+                  helperText={error ? error.message : ""}
+                />
+              )}
+            />
+          </>
+        )
       case 1:
         return (
           <>
-          <Grid container spacing={3}>
-            {[
-              { icon: Memory, title: "Style", value: "style" },
-              { icon: DataObject, title: "Tone", value: "tone" },
-              { icon: CloudQueue, title: "Vocal Style", value: "vocalStyle" },
-            ].map((item, index) => (
-              <Grid item xs={12} sm={4} key={index}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Box component={item.icon} sx={{ fontSize: 40, mb: 1, color: '#fffff' }} />
-                  <Typography variant="h6" gutterBottom>{item.title}</Typography>
-                  <Controller
-                    key={item.value}
-                    name={item.value as "style" | "tone" | "vocalStyle"}
-                    control={control}
-                    defaultValue=""
-                    render={({ field, fieldState: { error } }) => (
-                      <EditableField
-                    fullWidth
-                    label={item.value.charAt(0).toUpperCase() + item.value.slice(1)}
-                    {...field}
-                    error={!!error}
-                    helperText={error ? error.message : ""}
-                    margin="normal"
-                  />
-                )}
-              />
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
+
+            <Grid container spacing={3}>
+              {[
+                { icon: Memory, title: "Style", value: "style" },
+                { icon: DataObject, title: "Tone", value: "tone" },
+                { icon: CloudQueue, title: "Vocal Style", value: "vocalStyle" },
+              ].map((item, index) => (
+                <Grid item xs={12} sm={4} key={index}>
+                  <StyledPaper elevation={3}>
+                    <StyledIcon component={item.icon} />
+                    <StyledTypography variant="h6" gutterBottom>
+                      {item.title}
+                    </StyledTypography>
+                    <Controller
+                      name={item.value as "style" | "tone" | "vocalStyle"}
+                      control={control}
+                      defaultValue=""
+                      render={({ field, fieldState: { error } }) => (
+                        <EditableField
+                          fullWidth
+                          label={item.value.charAt(0).toUpperCase() + item.value.slice(1)}
+                          {...field}
+                          error={!!error}
+                          helperText={error ? error.message : ""}
+                          margin="normal"
+                        />
+                      )}
+                    />
+                  </StyledPaper>
+                </Grid>
+              ))}
+            </Grid>
           </>
         )
       case 2:
         return (
           <>
-         <SongDetailsContainer>
-         <Controller
-            name="songTitle"
-            control={control}
-            render={({ field, fieldState }) => (
-              <StyledTextField
-                fullWidth
-                label="Song Title"
-                {...field}
-                error={!!fieldState.error}
-                helperText={fieldState.error ? fieldState.error.message : ""}
+            <SongDetailsContainer>
+              <Controller
+                name="songTitle"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <StyledTextField
+                    fullWidth
+                    label="Song Title"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                  />
+                )}
               />
-            )}
-          />
-          <Controller
-            name="lyrics"
-            control={control}
-            render={({ field, fieldState }) => (
-              <StyledTextField
-                fullWidth
-                multiline
-                rows={10}
-                label="Lyrics"
-                {...field}
-                error={!!fieldState.error}
-                helperText={fieldState.error ? fieldState.error.message : ""}
+              <Controller
+                name="lyrics"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <StyledTextField
+                    fullWidth
+                    multiline
+                    rows={10}
+                    label="Lyrics"
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error ? fieldState.error.message : ""}
+                  />
+                )}
               />
-            )}
-          />
-         </SongDetailsContainer>
-          <PricingCard>
-            <Typography variant="h6" sx={{ color: '#FFFFFF', marginBottom: '0.5rem' }}>Pricing Information</Typography>
-            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-              First generation: £0.99
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-              Additional generations: £5.00 each
-            </Typography>
-          </PricingCard>
+            </SongDetailsContainer>
+            <PricingCard>
+              <Typography variant="h6" sx={{ color: '#FFFFFF', marginBottom: '0.5rem' }}>Pricing Information</Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                First generation: £0.99
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                Additional generations: £5.00 each
+              </Typography>
+            </PricingCard>
           </>
         )
       default:
@@ -301,50 +314,50 @@ export default function SongCreationForm({ session }: any) {
   }
 
   const totalSteps = steps.length;
-  
+
   return (
     <FormContainer maxWidth="md">
       <form onSubmit={handleSubmit(onSubmit)}>
-      <StepHeader>
-        <StepIndicator>
-          <Typography variant="body1">
-            Step {step + 1} of {totalSteps}
-          </Typography>
-          <Typography variant="h6">
-            {steps[step].label}
-          </Typography>
-        </StepIndicator>
-        {steps[step].description && (
-          <Typography variant="body2" sx={{ marginTop: '1rem', marginBottom: '1rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-            {steps[step].description}
-          </Typography>
-        )}
-        <StyledLinearProgress 
-          variant="determinate" 
-          value={(step / (totalSteps - 1)) * 100} 
-        />
-      </StepHeader>
-      {renderStepContent(step)}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-        {step > 0 && (
-          <StyledButton 
-            type="button" 
-            onClick={() => setStep(step - 1)}
-            disabled={loading}
+        <StepHeader>
+          <StepIndicator>
+            <Typography variant="body1">
+              Step {step + 1} of {totalSteps}
+            </Typography>
+            <Typography variant="h6">
+              {steps[step].label}
+            </Typography>
+          </StepIndicator>
+          {steps[step].description && (
+            <Typography variant="body2" sx={{ marginTop: '1rem', marginBottom: '1rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+              {steps[step].description}
+            </Typography>
+          )}
+          <StyledLinearProgress
+            variant="determinate"
+            value={(step / (totalSteps - 1)) * 100}
+          />
+        </StepHeader>
+        {renderStepContent(step)}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+          {step > 0 && (
+            <StyledButton
+              type="button"
+              onClick={() => setStep(step - 1)}
+              disabled={loading}
+            >
+              Back
+            </StyledButton>
+          )}
+          <StyledButton
+            type="submit"
+            disabled={loading || !isValid}
           >
-            Back
+            {step === 2 ? `Pay & Generate Song (£${generationCount === 1 ? '0.99' : '5.00'})` : 'Next'}
           </StyledButton>
+        </Box>
+        {openLoginDialog && (
+          <AuthDialog open={openLoginDialog} onClose={handleCloseLoginDialog} />
         )}
-        <StyledButton 
-          type="submit" 
-          disabled={loading || !isValid}
-        >
-          {step === 2 ? `Pay & Generate Song (£${generationCount === 1 ? '0.99' : '5.00'})` : 'Next'}
-        </StyledButton>
-      </Box>
-      {openLoginDialog && (
-        <AuthDialog open={openLoginDialog} onClose={handleCloseLoginDialog} />
-      )}
       </form>
     </FormContainer>
   );

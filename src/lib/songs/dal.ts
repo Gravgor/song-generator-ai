@@ -3,7 +3,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { verifySession } from "../auth";
 import { prisma } from "@/lib/prisma";
 import { protectedGetLatestPayment } from "../stripe/dal";
-import { addSongGenerationJob } from "../../websockets/queue";
+import { addSongGenerationJob } from "../../../server/websockets/queue";
 
 
 interface SongProgress {
@@ -142,6 +142,15 @@ export async function protectedClearProgress() {
   
       if (!userId) {
         throw new Error("User ID not found");
+      }
+      console.log(userId);
+
+      const userExists = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+  
+      if (!userExists) {
+        throw new Error("User does not exist in the database");
       }
   
       // Check if there is existing progress for this user

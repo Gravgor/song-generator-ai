@@ -1,7 +1,7 @@
 'use server';
 import { verifySession } from "../auth";
 import { prisma } from "@/lib/prisma";
-import { addSongGenerationJob } from "@/websockets/queue";
+import { addSongGenerationJob } from "../../../server/websockets/queue";
 import { revalidatePath } from "next/cache";
 
 

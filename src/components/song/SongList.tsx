@@ -12,7 +12,7 @@ import {
   Backdrop,
   CircularProgress,
 } from "@mui/material";
-import { PlayArrow, Pause, Memory } from "@mui/icons-material";
+import { PlayArrow, Pause, Memory, Rtt } from "@mui/icons-material";
 import { styled } from "@mui/system";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";

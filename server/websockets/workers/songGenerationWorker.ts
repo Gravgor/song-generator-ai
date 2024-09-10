@@ -1,9 +1,9 @@
-import { io } from '../../../songGenerationServer.js';
 import { prisma } from '../prisma.js';
 import { logger } from '../lib/logger.js';
 import { revalidatePath } from 'next/cache.js';
+import { io } from '../../socketServer.js';
 
-export const processSongGeneration = async (job) => {
+export const processSongGeneration = async (job:  any) => {
   const { userId, taskId } = job.data;
   console.log('Starting to process job:', job.id, 'for user:', userId, 'task:', taskId);
   let retries = 0;
@@ -30,7 +30,7 @@ export const processSongGeneration = async (job) => {
         throw new Error(`API request failed with status ${taskRequest.status}`);
       }
 
-      const taskResponse = await taskRequest.json();
+      const taskResponse: any = await taskRequest.json();
       logger.info(`Task ${taskId} status: ${taskResponse.data.status}`);
 
       if (taskResponse.data.status === "completed") {
@@ -39,8 +39,26 @@ export const processSongGeneration = async (job) => {
 
         for (const clipId in clips) {
           const clip = clips[clipId];
-          await prisma.clip.create({
-            data: {
+          await prisma.clip.upsert({
+            where: {
+              userId_clipId: {
+                userId: userId,
+                clipId: clipId
+              }
+            },
+            update: {
+              clipVideoUrl: clip.video_url,
+              clipAudioUrl: clip.audio_url,
+              clipCoverUrl: clip.image_url,
+              clipTitle: clip.title,
+              clipTags: clip.metadata.tags,
+              songGeneration: {
+                connect: {
+                  id: taskId
+                }
+              }
+            },
+            create: {
               clipId: clipId,
               clipVideoUrl: clip.video_url,
               clipAudioUrl: clip.audio_url,
