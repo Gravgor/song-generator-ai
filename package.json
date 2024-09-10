@@ -10,7 +10,8 @@
     "build:server": "tsc --project tsconfig.server.json",
     "build:next": "next build",
     "build": "npm run build:next && npm run build:server",
-    "start:prod": "cross-env NODE_ENV=production node dist/server.js"
+    "start:prod": "concurrently \"cross-env NODE_ENV=production node dist/server.js\" \"next start\"",
+    "start": "npm run start:prod"
   },
   "dependencies": {
     "@bull-board/api": "^5.21.4",
